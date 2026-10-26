@@ -1,0 +1,5225 @@
+<!doctype html><html><head><meta charset='utf-8'><title>Multi-Hop Trivia - preview</title><style>body{background:#FFFFFF;margin:0;padding:0}hr{border:none;border-top:2px solid #C5C1C1;margin:26px 0}</style>
+<style>
+  :root {
+    --app-bg: #FFFFFF;
+    --purple: #722F99;
+    --purple-deep: #4A1E66;
+    --silver: #C5C1C1;
+    --peach: #FEE7C8;
+    --soft-red: #FF9292;
+    --ink: #2A2233;
+    --ink-soft: #5C5468;
+    --peach-light: #F0D8C8;
+
+    --line: 1px solid var(--silver);
+    --hairline: 1px solid rgba(197, 193, 193, 0.55);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(16, 8, 32, 0.04);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 24px -8px rgba(74, 30, 102, 0.22);
+  }
+
+  /* ================= canvas ================= */
+  .stApp {
+    background-color: var(--app-bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-size: 15px;
+  }
+  .stApp [data-testid="stAppViewContainer"],
+  .stApp [data-testid="stMain"],
+  .stApp [data-testid="stMainBlockContainer"],
+  .stApp [data-testid="stHeader"],
+  .stApp [data-testid="stToolbar"] {
+    background-color: var(--app-bg);
+  }
+  .stApp [data-testid="stMainBlockContainer"] { padding-top: 1.2rem; }
+  .stApp [data-testid="stVerticalBlock"] { gap: 0.55rem; }
+  h1, h2, h3, h4, h5, h6 { color: var(--purple); }
+
+  /* ================= header ================= */
+  .mh-hero {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0 14px 0;
+    margin: 0 0 18px 0;
+    border-bottom: 1px solid var(--silver);
+    box-shadow: none;
+  }
+  .mh-hero h1 {
+    color: var(--purple);
+    margin: 6px 0 6px 0;
+    font-size: 2.05rem;
+    font-weight: 650;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .mh-hero p {
+    color: var(--silver);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    max-width: 68ch;
+  }
+  .mh-hero .mh-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--purple);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .mh-hero .mh-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--purple);
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+  /* ================= question banner ================= */
+  .mh-question {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .mh-question .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  .mh-question .mh-q {
+    font-size: 1.18rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+  .mh-question .mh-teach { color: var(--ink-soft); font-size: 0.86rem; margin-top: 6px; }
+
+  /* ================= idle / stale placeholders ================= */
+  .mh-idle {
+    background: rgba(254, 231, 200, 0.2);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-idle .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .mh-idle h4 { margin: 6px 0 8px 0; font-size: 1.05rem; font-weight: 650; color: var(--ink); }
+  .mh-idle p { margin: 0 0 18px 0; font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); }
+  .mh-idle p b { color: var(--purple); font-weight: 650; }
+  .mh-idle-steps { display: flex; gap: 14px; flex-wrap: wrap; }
+  .mh-idle-step {
+    flex: 1;
+    min-width: 190px;
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 15px;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-idle-step b { display: block; color: var(--purple); font-size: 0.88rem; font-weight: 650; }
+  .mh-idle-step span { display: block; color: var(--ink-soft); font-size: 0.82rem; margin-top: 3px; line-height: 1.5; }
+
+  /* ================= agent cards ================= */
+  .mh-agents { display: flex; gap: 16px; margin-bottom: 22px; }
+  .mh-agent {
+    flex: 1;
+    background: rgba(254, 231, 200, 0.26);
+    border: var(--line);
+    border-top: 3px solid var(--silver);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    min-height: 132px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  }
+  .mh-agent:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+  .mh-agents > .mh-agent:nth-child(1) { border-top-color: var(--purple); }
+  .mh-agents > .mh-agent:nth-child(3) { border-top-color: var(--purple); }
+  .mh-agent.mh-agent-bad {
+    border-top-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.1);
+  }
+  .mh-agent h4 {
+    margin: 0 0 3px 0;
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--purple);
+    letter-spacing: -0.1px;
+  }
+  .mh-agent .mh-role {
+    font-size: 0.67rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .mh-agent .mh-body {
+    font-size: 0.88rem;
+    margin-top: 12px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .mh-agent .mh-body b { font-weight: 650; color: var(--purple); }
+  .mh-agent .mh-body code {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.8rem;
+    background: rgba(197, 193, 193, 0.3);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+
+  /* ================= pills / tags ================= */
+  .mh-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    line-height: 1.5;
+    background: rgba(197, 193, 193, 0.34);
+    border: 1px solid rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .mh-pill.mh-pill-bad {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-pill.mh-pill-grey {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink-soft);
+  }
+  .mh-pill.mh-pill-accent {
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.32);
+    color: var(--purple);
+  }
+
+  /* ================= tabs ================= */
+  .stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
+    border-bottom: 1px solid var(--silver);
+    background: transparent;
+  }
+  .stTabs [data-baseweb="tab"] {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    color: var(--silver) !important;
+    font-weight: 500;
+    font-size: 0.92rem;
+    padding: 10px 16px !important;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .stTabs [data-baseweb="tab"]:hover {
+    color: var(--purple) !important;
+    background: transparent !important;
+  }
+  .stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: transparent !important;
+    color: var(--purple) !important;
+    font-weight: 700;
+    border-bottom: 2px solid var(--purple) !important;
+  }
+  .stTabs [data-baseweb="tab-panel"] { background: transparent; padding-top: 1rem; }
+  .stTabs [data-baseweb="tab-highlight"],
+  .stTabs [data-baseweb="tab-border"] { display: none !important; }
+
+  /* ================= planner ================= */
+  .mh-plan {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-plan h4 { margin: 0 0 10px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-plan ol { margin: 0; padding-left: 20px; }
+  .mh-plan li { margin-bottom: 7px; font-size: 0.93rem; line-height: 1.5; }
+  .mh-plan li::marker { color: var(--purple); font-weight: 700; }
+  .mh-plan .mh-meta {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.6);
+  }
+  .mh-plan .mh-meta b { color: var(--purple); font-weight: 650; }
+
+  /* ================= trace ================= */
+  .mh-trace { margin-bottom: 8px; }
+  .mh-trace h3 { font-size: 1.05rem; font-weight: 650; margin-bottom: 10px; }
+  .mh-step {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.25rem 1.25rem;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease;
+  }
+  .mh-step:hover { box-shadow: var(--shadow-lg); }
+  .mh-step.mh-step-bad {
+    border-color: rgba(255, 146, 146, 0.75);
+    background: rgba(255, 146, 146, 0.06);
+    box-shadow: none;
+  }
+  .mh-step.mh-step-repair { border-left: 3px solid var(--purple); }
+  .mh-step-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .mh-badge {
+    background: rgba(114, 47, 153, 0.1);
+    color: var(--purple);
+    border: 1px solid rgba(114, 47, 153, 0.28);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .mh-tool {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+  }
+  .mh-state {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    line-height: 1.5;
+  }
+  .mh-state-ok {
+    color: var(--purple);
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.28);
+  }
+  .mh-state-bad {
+    color: var(--ink);
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+  }
+  .mh-state-grey {
+    color: var(--ink-soft);
+    background: rgba(197, 193, 193, 0.32);
+    border-color: rgba(197, 193, 193, 0.72);
+  }
+
+  .mh-block {
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+    border-left-width: 3px;
+  }
+  .mh-tag {
+    display: inline-block;
+    min-width: 92px;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    vertical-align: top;
+  }
+  .mh-thought {
+    background: var(--peach);
+    border-color: rgba(197, 193, 193, 0.55);
+    border-left-color: var(--purple);
+  }
+  .mh-thought .mh-tag { color: var(--purple); }
+  .mh-action {
+    background: rgba(255, 146, 146, 0.16);
+    border-color: rgba(255, 146, 146, 0.5);
+    border-left-color: var(--soft-red);
+  }
+  .mh-action .mh-tag { color: var(--ink); }
+  .mh-action code {
+    font-family: "Consolas", "Courier New", monospace;
+    color: var(--ink);
+    font-size: 0.85rem;
+  }
+  .mh-observation {
+    background: rgba(197, 193, 193, 0.26);
+    border-color: var(--silver);
+    border-left-color: var(--silver);
+  }
+  .mh-observation .mh-tag { color: var(--ink-soft); }
+  .mh-obs-text {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.84rem;
+    color: var(--ink);
+  }
+
+  .mh-evi {
+    margin-top: 12px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.7);
+    padding-top: 10px;
+  }
+  .mh-evi-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.45);
+  }
+  .mh-evi-row:last-child { border-bottom: none; }
+  .mh-evi-id {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    min-width: 150px;
+  }
+  .mh-evi-txt { color: var(--ink-soft); flex: 1; }
+  .mh-evi-txt b { color: var(--ink); font-weight: 650; }
+  .mh-evi-num {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .mh-evi-row.mh-evi-decoy {
+    background: rgba(255, 146, 146, 0.14);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+  }
+  .mh-evi-row.mh-evi-noise { opacity: 0.55; }
+  .mh-evi-cite {
+    background: rgba(254, 231, 200, 0.55);
+    border-left: 3px solid var(--silver);
+    padding: 8px 12px;
+    font-size: 0.83rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--ink-soft);
+  }
+
+  /* ================= terminal strip ================= */
+  .mh-terminal {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 10px 0 18px 0;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .mh-terminal.mh-terminal-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-terminal .mh-terminal-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-terminal .mh-terminal-value {
+    color: var(--purple);
+    font-size: 1.85rem;
+    font-weight: 700;
+    margin: 6px 0 4px 0;
+    letter-spacing: -0.4px;
+  }
+  .mh-terminal.mh-terminal-bad .mh-terminal-value { color: var(--ink); }
+  .mh-terminal .mh-terminal-note { color: var(--ink-soft); font-size: 0.82rem; }
+
+  /* ================= final answer ================= */
+  .mh-final {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 4px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    margin: 18px 0 20px 0;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .mh-final .mh-final-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-final .mh-final-value {
+    color: var(--purple);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.8px;
+    margin: 8px 0 8px 0;
+  }
+  .mh-final .mh-final-note { color: var(--ink-soft); font-size: 0.84rem; }
+  .mh-final.mh-final-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-final.mh-final-bad .mh-final-label,
+  .mh-final.mh-final-bad .mh-final-note { color: var(--ink-soft); }
+  .mh-final.mh-final-bad .mh-final-value { color: var(--ink); }
+
+  /* ================= verifier ================= */
+  .mh-verdict {
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border: var(--line);
+    background: var(--app-bg);
+    box-shadow: var(--shadow);
+  }
+  .mh-verdict.mh-verdict-ok {
+    border-color: rgba(114, 47, 153, 0.45);
+    border-left: 3px solid var(--purple);
+  }
+  .mh-verdict.mh-verdict-bad {
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+  }
+  .mh-verdict h4 { margin: 0 0 8px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-verdict .mh-expl { font-size: 0.9rem; line-height: 1.6; color: var(--ink); }
+  .mh-check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    padding: 9px 0;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.5);
+    line-height: 1.5;
+  }
+  .mh-check:last-child { border-bottom: none; }
+  .mh-check .mh-check-name {
+    font-family: "Consolas", monospace;
+    font-size: 0.75rem;
+    min-width: 200px;
+    color: var(--purple);
+  }
+  .mh-status {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 2px 8px;
+    min-width: 60px;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+  .mh-status-pass {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+  .mh-status-fail {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-status-na {
+    background: rgba(197, 193, 193, 0.22);
+    border-color: rgba(197, 193, 193, 0.55);
+    color: var(--ink-soft);
+  }
+  .mh-status-warn {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+
+  /* ================= misc blocks ================= */
+  .mh-note {
+    background: rgba(197, 193, 193, 0.16);
+    border: 1px solid rgba(197, 193, 193, 0.45);
+    border-left: 3px solid var(--silver);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .mh-fail {
+    background: rgba(255, 146, 146, 0.1);
+    border: 1px solid rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 12px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-fail h4 { margin: 0 0 6px 0; color: var(--ink); font-size: 0.95rem; font-weight: 650; }
+  .mh-fail div { font-size: 0.88rem; line-height: 1.55; color: var(--ink); }
+  .mh-kv { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px 0; }
+  .mh-kv-item {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-kv-item span { color: var(--ink-soft); }
+  .mh-kv-item b { color: var(--purple); font-weight: 650; margin-left: 4px; }
+
+  /* ================= sidebar ================= */
+  section[data-testid="stSidebar"] {
+    background-color: var(--app-bg);
+    border-right: 1px solid var(--silver);
+  }
+  section[data-testid="stSidebar"] h1,
+  section[data-testid="stSidebar"] h2,
+  section[data-testid="stSidebar"] h3 {
+    color: var(--purple);
+    font-size: 1.02rem;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+  }
+  section[data-testid="stSidebar"] h4 {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin: 1.4rem 0 0.35rem 0;
+  }
+  section[data-testid="stSidebar"] p,
+  section[data-testid="stSidebar"] .stCaption {
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
+    color: var(--ink);
+    font-size: 0.82rem;
+  }
+  section[data-testid="stSidebar"] [data-baseweb="radio"] p,
+  section[data-testid="stSidebar"] [data-baseweb="checkbox"] p {
+    color: var(--ink);
+    font-size: 0.84rem;
+  }
+  section[data-testid="stSidebar"] label { font-size: 0.82rem; color: var(--ink); }
+  section[data-testid="stSidebar"] hr { border-color: rgba(197, 193, 193, 0.5); }
+
+  /* ================= widgets ================= */
+  .stButton > button {
+    background: var(--app-bg);
+    color: var(--purple);
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.86rem;
+    padding: 0.42rem 0.9rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+  .stButton > button:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+    box-shadow: var(--shadow);
+  }
+  .stButton > button[kind="primary"],
+  .stButton > button[kind="primary"]:focus,
+  .stButton > button[kind="primary"]:hover,
+  .stButton > button[kind="primary"]:active {
+    background: var(--purple);
+    color: #FFFFFF;
+    border: 1px solid var(--purple);
+    box-shadow: 0 1px 2px rgba(114, 47, 153, 0.3);
+  }
+  .stButton > button[kind="primary"]:hover {
+    background: var(--purple-deep);
+    border-color: var(--purple-deep);
+  }
+  .stButton > button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.18);
+  }
+  /* the button label is markdown - let it inherit the button's own colour */
+  .stButton > button p,
+  .stButton > button span,
+  .stButton > button div {
+    color: inherit !important;
+    font-family: inherit;
+  }
+  .stDownloadButton > button { border-radius: var(--radius-sm); }
+
+  .stTextInput input,
+  .stNumberInput input,
+  .stTextArea textarea {
+    border-radius: var(--radius-sm) !important;
+    border-color: var(--silver) !important;
+    box-shadow: var(--shadow-sm);
+    font-size: 0.86rem;
+  }
+  .stTextInput input:focus,
+  .stNumberInput input:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+
+  /* inputs, dropdowns and sliders - minimal and native */
+  [data-testid="stTextInput"] input,
+  [data-testid="stNumberInput"] input,
+  [data-testid="stTextArea"] textarea {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    color: var(--ink) !important;
+    font-size: 0.86rem;
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stTextInput"] input:focus,
+  [data-testid="stNumberInput"] input:focus,
+  [data-testid="stTextArea"] textarea:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+  [data-testid="stNumberInputContainer"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div:hover {
+    border-color: var(--purple) !important;
+  }
+  [data-testid="stSlider"] [role="slider"] {
+    background: var(--purple) !important;
+    border-color: var(--purple) !important;
+    box-shadow: 0 1px 3px rgba(114, 47, 153, 0.35);
+  }
+  [data-testid="stSlider"] [data-testid="stSliderTickBar"] {
+    background: rgba(197, 193, 193, 0.45);
+  }
+  [data-testid="stCheckbox"] label p { color: var(--ink); font-size: 0.84rem; }
+
+  div[data-testid="stExpander"] details {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    background: var(--app-bg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  div[data-testid="stExpander"] summary {
+    color: var(--purple);
+    font-weight: 650;
+    font-size: 0.94rem;
+    padding: 0.7rem 1rem;
+    transition: background 0.15s ease;
+  }
+  div[data-testid="stExpander"] summary:hover { background: rgba(114, 47, 153, 0.04); }
+  div[data-testid="stExpander"] summary svg { fill: var(--purple); }
+
+  .stApp [data-testid="stDataFrame"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .stApp [data-testid="stCaptionContainer"] { color: var(--ink-soft); }
+  .stApp hr { border-color: rgba(197, 193, 193, 0.5); }
+  .stApp code {
+    background: rgba(197, 193, 193, 0.24);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+</style>
+</head><body><div style='max-width:1100px;margin:0 auto;padding:18px'><h1 style='color:#722F99'>Static preview of the Streamlit demo</h1><h2 style='color:#722F99'>Before the run (the state the app starts in)</h2>
+    <div class="mh-idle">
+      <div class="mh-label">Ready to run</div>
+      <h4>The pipeline has not been run yet</h4>
+      <p>Choose a scenario and the retrieval settings in the sidebar, then press <b>Run pipeline</b>. Nothing is executed until you do.</p>
+      <div class="mh-idle-steps"><div class="mh-idle-step"><b>Planner</b><span>splits the question into an ordered list of hops</span></div><div class="mh-idle-step"><b>Researcher</b><span>runs the Thought / Action / Observation loop</span></div><div class="mh-idle-step"><b>Verifier</b><span>re-reads the evidence and audits every hop</span></div></div>
+    </div>
+    <hr></div><h2 style='color:#722F99'>Scenario 1 - Mayor of a capital</h2><hr>
+<style>
+  :root {
+    --app-bg: #FFFFFF;
+    --purple: #722F99;
+    --purple-deep: #4A1E66;
+    --silver: #C5C1C1;
+    --peach: #FEE7C8;
+    --soft-red: #FF9292;
+    --ink: #2A2233;
+    --ink-soft: #5C5468;
+    --peach-light: #F0D8C8;
+
+    --line: 1px solid var(--silver);
+    --hairline: 1px solid rgba(197, 193, 193, 0.55);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(16, 8, 32, 0.04);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 24px -8px rgba(74, 30, 102, 0.22);
+  }
+
+  /* ================= canvas ================= */
+  .stApp {
+    background-color: var(--app-bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-size: 15px;
+  }
+  .stApp [data-testid="stAppViewContainer"],
+  .stApp [data-testid="stMain"],
+  .stApp [data-testid="stMainBlockContainer"],
+  .stApp [data-testid="stHeader"],
+  .stApp [data-testid="stToolbar"] {
+    background-color: var(--app-bg);
+  }
+  .stApp [data-testid="stMainBlockContainer"] { padding-top: 1.2rem; }
+  .stApp [data-testid="stVerticalBlock"] { gap: 0.55rem; }
+  h1, h2, h3, h4, h5, h6 { color: var(--purple); }
+
+  /* ================= header ================= */
+  .mh-hero {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0 14px 0;
+    margin: 0 0 18px 0;
+    border-bottom: 1px solid var(--silver);
+    box-shadow: none;
+  }
+  .mh-hero h1 {
+    color: var(--purple);
+    margin: 6px 0 6px 0;
+    font-size: 2.05rem;
+    font-weight: 650;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .mh-hero p {
+    color: var(--silver);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    max-width: 68ch;
+  }
+  .mh-hero .mh-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--purple);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .mh-hero .mh-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--purple);
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+  /* ================= question banner ================= */
+  .mh-question {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .mh-question .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  .mh-question .mh-q {
+    font-size: 1.18rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+  .mh-question .mh-teach { color: var(--ink-soft); font-size: 0.86rem; margin-top: 6px; }
+
+  /* ================= idle / stale placeholders ================= */
+  .mh-idle {
+    background: rgba(254, 231, 200, 0.2);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-idle .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .mh-idle h4 { margin: 6px 0 8px 0; font-size: 1.05rem; font-weight: 650; color: var(--ink); }
+  .mh-idle p { margin: 0 0 18px 0; font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); }
+  .mh-idle p b { color: var(--purple); font-weight: 650; }
+  .mh-idle-steps { display: flex; gap: 14px; flex-wrap: wrap; }
+  .mh-idle-step {
+    flex: 1;
+    min-width: 190px;
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 15px;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-idle-step b { display: block; color: var(--purple); font-size: 0.88rem; font-weight: 650; }
+  .mh-idle-step span { display: block; color: var(--ink-soft); font-size: 0.82rem; margin-top: 3px; line-height: 1.5; }
+
+  /* ================= agent cards ================= */
+  .mh-agents { display: flex; gap: 16px; margin-bottom: 22px; }
+  .mh-agent {
+    flex: 1;
+    background: rgba(254, 231, 200, 0.26);
+    border: var(--line);
+    border-top: 3px solid var(--silver);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    min-height: 132px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  }
+  .mh-agent:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+  .mh-agents > .mh-agent:nth-child(1) { border-top-color: var(--purple); }
+  .mh-agents > .mh-agent:nth-child(3) { border-top-color: var(--purple); }
+  .mh-agent.mh-agent-bad {
+    border-top-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.1);
+  }
+  .mh-agent h4 {
+    margin: 0 0 3px 0;
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--purple);
+    letter-spacing: -0.1px;
+  }
+  .mh-agent .mh-role {
+    font-size: 0.67rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .mh-agent .mh-body {
+    font-size: 0.88rem;
+    margin-top: 12px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .mh-agent .mh-body b { font-weight: 650; color: var(--purple); }
+  .mh-agent .mh-body code {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.8rem;
+    background: rgba(197, 193, 193, 0.3);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+
+  /* ================= pills / tags ================= */
+  .mh-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    line-height: 1.5;
+    background: rgba(197, 193, 193, 0.34);
+    border: 1px solid rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .mh-pill.mh-pill-bad {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-pill.mh-pill-grey {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink-soft);
+  }
+  .mh-pill.mh-pill-accent {
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.32);
+    color: var(--purple);
+  }
+
+  /* ================= tabs ================= */
+  .stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
+    border-bottom: 1px solid var(--silver);
+    background: transparent;
+  }
+  .stTabs [data-baseweb="tab"] {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    color: var(--silver) !important;
+    font-weight: 500;
+    font-size: 0.92rem;
+    padding: 10px 16px !important;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .stTabs [data-baseweb="tab"]:hover {
+    color: var(--purple) !important;
+    background: transparent !important;
+  }
+  .stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: transparent !important;
+    color: var(--purple) !important;
+    font-weight: 700;
+    border-bottom: 2px solid var(--purple) !important;
+  }
+  .stTabs [data-baseweb="tab-panel"] { background: transparent; padding-top: 1rem; }
+  .stTabs [data-baseweb="tab-highlight"],
+  .stTabs [data-baseweb="tab-border"] { display: none !important; }
+
+  /* ================= planner ================= */
+  .mh-plan {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-plan h4 { margin: 0 0 10px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-plan ol { margin: 0; padding-left: 20px; }
+  .mh-plan li { margin-bottom: 7px; font-size: 0.93rem; line-height: 1.5; }
+  .mh-plan li::marker { color: var(--purple); font-weight: 700; }
+  .mh-plan .mh-meta {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.6);
+  }
+  .mh-plan .mh-meta b { color: var(--purple); font-weight: 650; }
+
+  /* ================= trace ================= */
+  .mh-trace { margin-bottom: 8px; }
+  .mh-trace h3 { font-size: 1.05rem; font-weight: 650; margin-bottom: 10px; }
+  .mh-step {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.25rem 1.25rem;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease;
+  }
+  .mh-step:hover { box-shadow: var(--shadow-lg); }
+  .mh-step.mh-step-bad {
+    border-color: rgba(255, 146, 146, 0.75);
+    background: rgba(255, 146, 146, 0.06);
+    box-shadow: none;
+  }
+  .mh-step.mh-step-repair { border-left: 3px solid var(--purple); }
+  .mh-step-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .mh-badge {
+    background: rgba(114, 47, 153, 0.1);
+    color: var(--purple);
+    border: 1px solid rgba(114, 47, 153, 0.28);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .mh-tool {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+  }
+  .mh-state {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    line-height: 1.5;
+  }
+  .mh-state-ok {
+    color: var(--purple);
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.28);
+  }
+  .mh-state-bad {
+    color: var(--ink);
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+  }
+  .mh-state-grey {
+    color: var(--ink-soft);
+    background: rgba(197, 193, 193, 0.32);
+    border-color: rgba(197, 193, 193, 0.72);
+  }
+
+  .mh-block {
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+    border-left-width: 3px;
+  }
+  .mh-tag {
+    display: inline-block;
+    min-width: 92px;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    vertical-align: top;
+  }
+  .mh-thought {
+    background: var(--peach);
+    border-color: rgba(197, 193, 193, 0.55);
+    border-left-color: var(--purple);
+  }
+  .mh-thought .mh-tag { color: var(--purple); }
+  .mh-action {
+    background: rgba(255, 146, 146, 0.16);
+    border-color: rgba(255, 146, 146, 0.5);
+    border-left-color: var(--soft-red);
+  }
+  .mh-action .mh-tag { color: var(--ink); }
+  .mh-action code {
+    font-family: "Consolas", "Courier New", monospace;
+    color: var(--ink);
+    font-size: 0.85rem;
+  }
+  .mh-observation {
+    background: rgba(197, 193, 193, 0.26);
+    border-color: var(--silver);
+    border-left-color: var(--silver);
+  }
+  .mh-observation .mh-tag { color: var(--ink-soft); }
+  .mh-obs-text {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.84rem;
+    color: var(--ink);
+  }
+
+  .mh-evi {
+    margin-top: 12px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.7);
+    padding-top: 10px;
+  }
+  .mh-evi-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.45);
+  }
+  .mh-evi-row:last-child { border-bottom: none; }
+  .mh-evi-id {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    min-width: 150px;
+  }
+  .mh-evi-txt { color: var(--ink-soft); flex: 1; }
+  .mh-evi-txt b { color: var(--ink); font-weight: 650; }
+  .mh-evi-num {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .mh-evi-row.mh-evi-decoy {
+    background: rgba(255, 146, 146, 0.14);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+  }
+  .mh-evi-row.mh-evi-noise { opacity: 0.55; }
+  .mh-evi-cite {
+    background: rgba(254, 231, 200, 0.55);
+    border-left: 3px solid var(--silver);
+    padding: 8px 12px;
+    font-size: 0.83rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--ink-soft);
+  }
+
+  /* ================= terminal strip ================= */
+  .mh-terminal {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 10px 0 18px 0;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .mh-terminal.mh-terminal-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-terminal .mh-terminal-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-terminal .mh-terminal-value {
+    color: var(--purple);
+    font-size: 1.85rem;
+    font-weight: 700;
+    margin: 6px 0 4px 0;
+    letter-spacing: -0.4px;
+  }
+  .mh-terminal.mh-terminal-bad .mh-terminal-value { color: var(--ink); }
+  .mh-terminal .mh-terminal-note { color: var(--ink-soft); font-size: 0.82rem; }
+
+  /* ================= final answer ================= */
+  .mh-final {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 4px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    margin: 18px 0 20px 0;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .mh-final .mh-final-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-final .mh-final-value {
+    color: var(--purple);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.8px;
+    margin: 8px 0 8px 0;
+  }
+  .mh-final .mh-final-note { color: var(--ink-soft); font-size: 0.84rem; }
+  .mh-final.mh-final-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-final.mh-final-bad .mh-final-label,
+  .mh-final.mh-final-bad .mh-final-note { color: var(--ink-soft); }
+  .mh-final.mh-final-bad .mh-final-value { color: var(--ink); }
+
+  /* ================= verifier ================= */
+  .mh-verdict {
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border: var(--line);
+    background: var(--app-bg);
+    box-shadow: var(--shadow);
+  }
+  .mh-verdict.mh-verdict-ok {
+    border-color: rgba(114, 47, 153, 0.45);
+    border-left: 3px solid var(--purple);
+  }
+  .mh-verdict.mh-verdict-bad {
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+  }
+  .mh-verdict h4 { margin: 0 0 8px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-verdict .mh-expl { font-size: 0.9rem; line-height: 1.6; color: var(--ink); }
+  .mh-check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    padding: 9px 0;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.5);
+    line-height: 1.5;
+  }
+  .mh-check:last-child { border-bottom: none; }
+  .mh-check .mh-check-name {
+    font-family: "Consolas", monospace;
+    font-size: 0.75rem;
+    min-width: 200px;
+    color: var(--purple);
+  }
+  .mh-status {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 2px 8px;
+    min-width: 60px;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+  .mh-status-pass {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+  .mh-status-fail {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-status-na {
+    background: rgba(197, 193, 193, 0.22);
+    border-color: rgba(197, 193, 193, 0.55);
+    color: var(--ink-soft);
+  }
+  .mh-status-warn {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+
+  /* ================= misc blocks ================= */
+  .mh-note {
+    background: rgba(197, 193, 193, 0.16);
+    border: 1px solid rgba(197, 193, 193, 0.45);
+    border-left: 3px solid var(--silver);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .mh-fail {
+    background: rgba(255, 146, 146, 0.1);
+    border: 1px solid rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 12px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-fail h4 { margin: 0 0 6px 0; color: var(--ink); font-size: 0.95rem; font-weight: 650; }
+  .mh-fail div { font-size: 0.88rem; line-height: 1.55; color: var(--ink); }
+  .mh-kv { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px 0; }
+  .mh-kv-item {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-kv-item span { color: var(--ink-soft); }
+  .mh-kv-item b { color: var(--purple); font-weight: 650; margin-left: 4px; }
+
+  /* ================= sidebar ================= */
+  section[data-testid="stSidebar"] {
+    background-color: var(--app-bg);
+    border-right: 1px solid var(--silver);
+  }
+  section[data-testid="stSidebar"] h1,
+  section[data-testid="stSidebar"] h2,
+  section[data-testid="stSidebar"] h3 {
+    color: var(--purple);
+    font-size: 1.02rem;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+  }
+  section[data-testid="stSidebar"] h4 {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin: 1.4rem 0 0.35rem 0;
+  }
+  section[data-testid="stSidebar"] p,
+  section[data-testid="stSidebar"] .stCaption {
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
+    color: var(--ink);
+    font-size: 0.82rem;
+  }
+  section[data-testid="stSidebar"] [data-baseweb="radio"] p,
+  section[data-testid="stSidebar"] [data-baseweb="checkbox"] p {
+    color: var(--ink);
+    font-size: 0.84rem;
+  }
+  section[data-testid="stSidebar"] label { font-size: 0.82rem; color: var(--ink); }
+  section[data-testid="stSidebar"] hr { border-color: rgba(197, 193, 193, 0.5); }
+
+  /* ================= widgets ================= */
+  .stButton > button {
+    background: var(--app-bg);
+    color: var(--purple);
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.86rem;
+    padding: 0.42rem 0.9rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+  .stButton > button:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+    box-shadow: var(--shadow);
+  }
+  .stButton > button[kind="primary"],
+  .stButton > button[kind="primary"]:focus,
+  .stButton > button[kind="primary"]:hover,
+  .stButton > button[kind="primary"]:active {
+    background: var(--purple);
+    color: #FFFFFF;
+    border: 1px solid var(--purple);
+    box-shadow: 0 1px 2px rgba(114, 47, 153, 0.3);
+  }
+  .stButton > button[kind="primary"]:hover {
+    background: var(--purple-deep);
+    border-color: var(--purple-deep);
+  }
+  .stButton > button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.18);
+  }
+  /* the button label is markdown - let it inherit the button's own colour */
+  .stButton > button p,
+  .stButton > button span,
+  .stButton > button div {
+    color: inherit !important;
+    font-family: inherit;
+  }
+  .stDownloadButton > button { border-radius: var(--radius-sm); }
+
+  .stTextInput input,
+  .stNumberInput input,
+  .stTextArea textarea {
+    border-radius: var(--radius-sm) !important;
+    border-color: var(--silver) !important;
+    box-shadow: var(--shadow-sm);
+    font-size: 0.86rem;
+  }
+  .stTextInput input:focus,
+  .stNumberInput input:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+
+  /* inputs, dropdowns and sliders - minimal and native */
+  [data-testid="stTextInput"] input,
+  [data-testid="stNumberInput"] input,
+  [data-testid="stTextArea"] textarea {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    color: var(--ink) !important;
+    font-size: 0.86rem;
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stTextInput"] input:focus,
+  [data-testid="stNumberInput"] input:focus,
+  [data-testid="stTextArea"] textarea:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+  [data-testid="stNumberInputContainer"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div:hover {
+    border-color: var(--purple) !important;
+  }
+  [data-testid="stSlider"] [role="slider"] {
+    background: var(--purple) !important;
+    border-color: var(--purple) !important;
+    box-shadow: 0 1px 3px rgba(114, 47, 153, 0.35);
+  }
+  [data-testid="stSlider"] [data-testid="stSliderTickBar"] {
+    background: rgba(197, 193, 193, 0.45);
+  }
+  [data-testid="stCheckbox"] label p { color: var(--ink); font-size: 0.84rem; }
+
+  div[data-testid="stExpander"] details {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    background: var(--app-bg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  div[data-testid="stExpander"] summary {
+    color: var(--purple);
+    font-weight: 650;
+    font-size: 0.94rem;
+    padding: 0.7rem 1rem;
+    transition: background 0.15s ease;
+  }
+  div[data-testid="stExpander"] summary:hover { background: rgba(114, 47, 153, 0.04); }
+  div[data-testid="stExpander"] summary svg { fill: var(--purple); }
+
+  .stApp [data-testid="stDataFrame"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .stApp [data-testid="stCaptionContainer"] { color: var(--ink-soft); }
+  .stApp hr { border-color: rgba(197, 193, 193, 0.5); }
+  .stApp code {
+    background: rgba(197, 193, 193, 0.24);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+</style>
+
+<div style='max-width:1100px;margin:0 auto;padding:18px'>
+
+    <div class="mh-hero">
+      <span class="mh-kicker"><span class="mh-dot"></span>Planner &amp;middot; ReAct Researcher &amp;middot; Verifier</span>
+      <h1>Multi-Hop Trivia Question Answering with ReAct</h1>
+      <p>One question, several hops, one verifiable answer - every Thought, Action and Observation is shown, and the verifier audits the evidence behind the chain.</p>
+    </div>
+    
+
+    <div class="mh-question">
+      <div class="mh-label">Scenario 1 - Mayor of a capital &amp;middot; expected: ?</div>
+      <div class="mh-q">Who is the mayor of the capital of France?</div>
+      <div class="mh-teach">teaching point</div>
+    </div>
+    
+
+    <div class="mh-agents">
+      <div class="mh-agent mh-agent-ok"><h4>Planner</h4><div class="mh-role">question decomposition</div><div class="mh-body">Split the question into <b>2 hop(s)</b> (strategy <code>pattern:mayor-of-capital</code>).</div></div>
+      <div class="mh-agent mh-agent-ok"><h4>Researcher</h4><div class="mh-role">ReAct loop</div><div class="mh-body"><b>2</b> tool call(s). Stop reason: <b>ALL_HOPS_RESOLVED</b>.</div></div>
+      <div class="mh-agent mh-agent-ok"><h4>Verifier</h4><div class="mh-role">evidence review</div><div class="mh-body"><b>CONFIRMED</b> - Confirmed - every hop is backed by the corpus</div></div>
+    </div>
+    
+
+    <div class="mh-plan">
+      <h4>Planner output &mdash; hop decomposition</h4>
+      <ol><li>What is the capital of France?</li><li>Who is the mayor of the city found in hop 1?</li></ol>
+      <div class="mh-meta">
+        <b>strategy:</b> pattern:mayor-of-capital &nbsp;&middot;&nbsp;
+        <b>answer type:</b> person &nbsp;&middot;&nbsp;
+        <b>hops:</b> 2
+      </div>
+      <div class="mh-meta"><div>Answer type inferred from the question: person.</div><div>Pattern match on &#x27;the &lt;role&gt; of the capital of &lt;country&gt;&#x27;.</div></div>
+    </div>
+    
+<div class="mh-trace"><h3>ReAct trace</h3><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">dictionary_lookup</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1: I need to find the capital of France. I will use the curated dictionary with the query &quot;France capital city&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>dictionary_lookup(capital | France)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">capital(France) = Paris  (exact key match on the curated dictionary (k = 1 by construction))</span></div>
+<div class="mh-note"><b>selection rule:</b> exact key match on the curated dictionary (k = 1 by construction)</div>
+<div class="mh-note"><div>&bull; exact key lookup over 20 curated facts.</div></div>
+<div class="mh-evi"><div class="mh-evi-cite">Source document (curated): capital</div></div>
+</div><div class="mh-step mh-step-repair">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">internal</span>
+<span class="mh-state mh-state-grey">BRIDGE</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1 resolved: capital(France) = Paris. That gives me the bridge entity for hop 2 - now I need to find the mayor of Paris.</div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">bridge entity: Paris</span></div>
+<div class="mh-note"><b>selection rule:</b> bridge handed to the next hop</div>
+</div><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 2</span>
+<span class="mh-tool">dictionary_lookup</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #2</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 2: I need to find the mayor of Paris. I will use the curated dictionary with the query &quot;Paris mayor&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>dictionary_lookup(mayor | Paris)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">mayor(Paris) = Anne Hidalgo  (exact key match on the curated dictionary (k = 1 by construction))</span></div>
+<div class="mh-note"><b>selection rule:</b> exact key match on the curated dictionary (k = 1 by construction)</div>
+<div class="mh-note"><div>&bull; exact key lookup over 20 curated facts.</div></div>
+<div class="mh-evi"><div class="mh-evi-cite">Source document (curated): mayor</div></div>
+</div>
+    <div class="mh-terminal">
+      <div class="mh-terminal-label">FINAL ANSWER - LOOP TERMINATED</div>
+      <div class="mh-terminal-value">Anne Hidalgo</div>
+      <div class="mh-terminal-note">every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    </div>
+
+    <div class="mh-final">
+      <div class="mh-final-label">FINAL ANSWER</div>
+      <div class="mh-final-value">Anne Hidalgo</div>
+      <div class="mh-final-note">chain: France -&gt; Paris -&gt; Anne Hidalgo | every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    
+<div class="mh-verdict mh-verdict-ok">
+<h4>Verifier report &mdash; Confirmed - every hop is backed by the corpus</h4>
+<div class="mh-expl">The chain France, Paris, Anne Hidalgo is supported by the retrieved evidence and the final answer has the type the question asked for.</div>
+<div style="margin-top:10px"><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">completeness</span><span>All 2 planned hops resolved after 2 tool call(s).</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">chain_type</span><span>Every bridge entity has the entity type the next hop requires.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">evidence_support[hop1]</span><span>&quot;Paris&quot; comes from an exact key in the curated dictionary (confidence 0.99) - no noisy passage can outrank it.</span></div><div class="mh-check"><span class="mh-status mh-status-na">N/A</span><span class="mh-check-name">context_conflict[hop1]</span><span>Dictionary mode returns exactly one fact per key, so there is no rival passage to conflict with.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">evidence_support[hop2]</span><span>&quot;Anne Hidalgo&quot; comes from an exact key in the curated dictionary (confidence 0.99) - no noisy passage can outrank it.</span></div><div class="mh-check"><span class="mh-status mh-status-na">N/A</span><span class="mh-check-name">context_conflict[hop2]</span><span>Dictionary mode returns exactly one fact per key, so there is no rival passage to conflict with.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">answer_type</span><span>The answer &quot;Anne Hidalgo&quot; is a person, which matches the &quot;person&quot; type the question asks for.</span></div></div>
+</div>
+</div><hr><h2 style='color:#722F99'>Scenario 2 - Reverse lookup chain</h2><hr>
+<style>
+  :root {
+    --app-bg: #FFFFFF;
+    --purple: #722F99;
+    --purple-deep: #4A1E66;
+    --silver: #C5C1C1;
+    --peach: #FEE7C8;
+    --soft-red: #FF9292;
+    --ink: #2A2233;
+    --ink-soft: #5C5468;
+    --peach-light: #F0D8C8;
+
+    --line: 1px solid var(--silver);
+    --hairline: 1px solid rgba(197, 193, 193, 0.55);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(16, 8, 32, 0.04);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 24px -8px rgba(74, 30, 102, 0.22);
+  }
+
+  /* ================= canvas ================= */
+  .stApp {
+    background-color: var(--app-bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-size: 15px;
+  }
+  .stApp [data-testid="stAppViewContainer"],
+  .stApp [data-testid="stMain"],
+  .stApp [data-testid="stMainBlockContainer"],
+  .stApp [data-testid="stHeader"],
+  .stApp [data-testid="stToolbar"] {
+    background-color: var(--app-bg);
+  }
+  .stApp [data-testid="stMainBlockContainer"] { padding-top: 1.2rem; }
+  .stApp [data-testid="stVerticalBlock"] { gap: 0.55rem; }
+  h1, h2, h3, h4, h5, h6 { color: var(--purple); }
+
+  /* ================= header ================= */
+  .mh-hero {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0 14px 0;
+    margin: 0 0 18px 0;
+    border-bottom: 1px solid var(--silver);
+    box-shadow: none;
+  }
+  .mh-hero h1 {
+    color: var(--purple);
+    margin: 6px 0 6px 0;
+    font-size: 2.05rem;
+    font-weight: 650;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .mh-hero p {
+    color: var(--silver);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    max-width: 68ch;
+  }
+  .mh-hero .mh-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--purple);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .mh-hero .mh-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--purple);
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+  /* ================= question banner ================= */
+  .mh-question {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .mh-question .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  .mh-question .mh-q {
+    font-size: 1.18rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+  .mh-question .mh-teach { color: var(--ink-soft); font-size: 0.86rem; margin-top: 6px; }
+
+  /* ================= idle / stale placeholders ================= */
+  .mh-idle {
+    background: rgba(254, 231, 200, 0.2);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-idle .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .mh-idle h4 { margin: 6px 0 8px 0; font-size: 1.05rem; font-weight: 650; color: var(--ink); }
+  .mh-idle p { margin: 0 0 18px 0; font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); }
+  .mh-idle p b { color: var(--purple); font-weight: 650; }
+  .mh-idle-steps { display: flex; gap: 14px; flex-wrap: wrap; }
+  .mh-idle-step {
+    flex: 1;
+    min-width: 190px;
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 15px;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-idle-step b { display: block; color: var(--purple); font-size: 0.88rem; font-weight: 650; }
+  .mh-idle-step span { display: block; color: var(--ink-soft); font-size: 0.82rem; margin-top: 3px; line-height: 1.5; }
+
+  /* ================= agent cards ================= */
+  .mh-agents { display: flex; gap: 16px; margin-bottom: 22px; }
+  .mh-agent {
+    flex: 1;
+    background: rgba(254, 231, 200, 0.26);
+    border: var(--line);
+    border-top: 3px solid var(--silver);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    min-height: 132px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  }
+  .mh-agent:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+  .mh-agents > .mh-agent:nth-child(1) { border-top-color: var(--purple); }
+  .mh-agents > .mh-agent:nth-child(3) { border-top-color: var(--purple); }
+  .mh-agent.mh-agent-bad {
+    border-top-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.1);
+  }
+  .mh-agent h4 {
+    margin: 0 0 3px 0;
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--purple);
+    letter-spacing: -0.1px;
+  }
+  .mh-agent .mh-role {
+    font-size: 0.67rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .mh-agent .mh-body {
+    font-size: 0.88rem;
+    margin-top: 12px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .mh-agent .mh-body b { font-weight: 650; color: var(--purple); }
+  .mh-agent .mh-body code {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.8rem;
+    background: rgba(197, 193, 193, 0.3);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+
+  /* ================= pills / tags ================= */
+  .mh-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    line-height: 1.5;
+    background: rgba(197, 193, 193, 0.34);
+    border: 1px solid rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .mh-pill.mh-pill-bad {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-pill.mh-pill-grey {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink-soft);
+  }
+  .mh-pill.mh-pill-accent {
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.32);
+    color: var(--purple);
+  }
+
+  /* ================= tabs ================= */
+  .stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
+    border-bottom: 1px solid var(--silver);
+    background: transparent;
+  }
+  .stTabs [data-baseweb="tab"] {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    color: var(--silver) !important;
+    font-weight: 500;
+    font-size: 0.92rem;
+    padding: 10px 16px !important;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .stTabs [data-baseweb="tab"]:hover {
+    color: var(--purple) !important;
+    background: transparent !important;
+  }
+  .stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: transparent !important;
+    color: var(--purple) !important;
+    font-weight: 700;
+    border-bottom: 2px solid var(--purple) !important;
+  }
+  .stTabs [data-baseweb="tab-panel"] { background: transparent; padding-top: 1rem; }
+  .stTabs [data-baseweb="tab-highlight"],
+  .stTabs [data-baseweb="tab-border"] { display: none !important; }
+
+  /* ================= planner ================= */
+  .mh-plan {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-plan h4 { margin: 0 0 10px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-plan ol { margin: 0; padding-left: 20px; }
+  .mh-plan li { margin-bottom: 7px; font-size: 0.93rem; line-height: 1.5; }
+  .mh-plan li::marker { color: var(--purple); font-weight: 700; }
+  .mh-plan .mh-meta {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.6);
+  }
+  .mh-plan .mh-meta b { color: var(--purple); font-weight: 650; }
+
+  /* ================= trace ================= */
+  .mh-trace { margin-bottom: 8px; }
+  .mh-trace h3 { font-size: 1.05rem; font-weight: 650; margin-bottom: 10px; }
+  .mh-step {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.25rem 1.25rem;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease;
+  }
+  .mh-step:hover { box-shadow: var(--shadow-lg); }
+  .mh-step.mh-step-bad {
+    border-color: rgba(255, 146, 146, 0.75);
+    background: rgba(255, 146, 146, 0.06);
+    box-shadow: none;
+  }
+  .mh-step.mh-step-repair { border-left: 3px solid var(--purple); }
+  .mh-step-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .mh-badge {
+    background: rgba(114, 47, 153, 0.1);
+    color: var(--purple);
+    border: 1px solid rgba(114, 47, 153, 0.28);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .mh-tool {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+  }
+  .mh-state {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    line-height: 1.5;
+  }
+  .mh-state-ok {
+    color: var(--purple);
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.28);
+  }
+  .mh-state-bad {
+    color: var(--ink);
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+  }
+  .mh-state-grey {
+    color: var(--ink-soft);
+    background: rgba(197, 193, 193, 0.32);
+    border-color: rgba(197, 193, 193, 0.72);
+  }
+
+  .mh-block {
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+    border-left-width: 3px;
+  }
+  .mh-tag {
+    display: inline-block;
+    min-width: 92px;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    vertical-align: top;
+  }
+  .mh-thought {
+    background: var(--peach);
+    border-color: rgba(197, 193, 193, 0.55);
+    border-left-color: var(--purple);
+  }
+  .mh-thought .mh-tag { color: var(--purple); }
+  .mh-action {
+    background: rgba(255, 146, 146, 0.16);
+    border-color: rgba(255, 146, 146, 0.5);
+    border-left-color: var(--soft-red);
+  }
+  .mh-action .mh-tag { color: var(--ink); }
+  .mh-action code {
+    font-family: "Consolas", "Courier New", monospace;
+    color: var(--ink);
+    font-size: 0.85rem;
+  }
+  .mh-observation {
+    background: rgba(197, 193, 193, 0.26);
+    border-color: var(--silver);
+    border-left-color: var(--silver);
+  }
+  .mh-observation .mh-tag { color: var(--ink-soft); }
+  .mh-obs-text {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.84rem;
+    color: var(--ink);
+  }
+
+  .mh-evi {
+    margin-top: 12px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.7);
+    padding-top: 10px;
+  }
+  .mh-evi-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.45);
+  }
+  .mh-evi-row:last-child { border-bottom: none; }
+  .mh-evi-id {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    min-width: 150px;
+  }
+  .mh-evi-txt { color: var(--ink-soft); flex: 1; }
+  .mh-evi-txt b { color: var(--ink); font-weight: 650; }
+  .mh-evi-num {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .mh-evi-row.mh-evi-decoy {
+    background: rgba(255, 146, 146, 0.14);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+  }
+  .mh-evi-row.mh-evi-noise { opacity: 0.55; }
+  .mh-evi-cite {
+    background: rgba(254, 231, 200, 0.55);
+    border-left: 3px solid var(--silver);
+    padding: 8px 12px;
+    font-size: 0.83rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--ink-soft);
+  }
+
+  /* ================= terminal strip ================= */
+  .mh-terminal {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 10px 0 18px 0;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .mh-terminal.mh-terminal-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-terminal .mh-terminal-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-terminal .mh-terminal-value {
+    color: var(--purple);
+    font-size: 1.85rem;
+    font-weight: 700;
+    margin: 6px 0 4px 0;
+    letter-spacing: -0.4px;
+  }
+  .mh-terminal.mh-terminal-bad .mh-terminal-value { color: var(--ink); }
+  .mh-terminal .mh-terminal-note { color: var(--ink-soft); font-size: 0.82rem; }
+
+  /* ================= final answer ================= */
+  .mh-final {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 4px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    margin: 18px 0 20px 0;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .mh-final .mh-final-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-final .mh-final-value {
+    color: var(--purple);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.8px;
+    margin: 8px 0 8px 0;
+  }
+  .mh-final .mh-final-note { color: var(--ink-soft); font-size: 0.84rem; }
+  .mh-final.mh-final-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-final.mh-final-bad .mh-final-label,
+  .mh-final.mh-final-bad .mh-final-note { color: var(--ink-soft); }
+  .mh-final.mh-final-bad .mh-final-value { color: var(--ink); }
+
+  /* ================= verifier ================= */
+  .mh-verdict {
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border: var(--line);
+    background: var(--app-bg);
+    box-shadow: var(--shadow);
+  }
+  .mh-verdict.mh-verdict-ok {
+    border-color: rgba(114, 47, 153, 0.45);
+    border-left: 3px solid var(--purple);
+  }
+  .mh-verdict.mh-verdict-bad {
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+  }
+  .mh-verdict h4 { margin: 0 0 8px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-verdict .mh-expl { font-size: 0.9rem; line-height: 1.6; color: var(--ink); }
+  .mh-check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    padding: 9px 0;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.5);
+    line-height: 1.5;
+  }
+  .mh-check:last-child { border-bottom: none; }
+  .mh-check .mh-check-name {
+    font-family: "Consolas", monospace;
+    font-size: 0.75rem;
+    min-width: 200px;
+    color: var(--purple);
+  }
+  .mh-status {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 2px 8px;
+    min-width: 60px;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+  .mh-status-pass {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+  .mh-status-fail {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-status-na {
+    background: rgba(197, 193, 193, 0.22);
+    border-color: rgba(197, 193, 193, 0.55);
+    color: var(--ink-soft);
+  }
+  .mh-status-warn {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+
+  /* ================= misc blocks ================= */
+  .mh-note {
+    background: rgba(197, 193, 193, 0.16);
+    border: 1px solid rgba(197, 193, 193, 0.45);
+    border-left: 3px solid var(--silver);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .mh-fail {
+    background: rgba(255, 146, 146, 0.1);
+    border: 1px solid rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 12px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-fail h4 { margin: 0 0 6px 0; color: var(--ink); font-size: 0.95rem; font-weight: 650; }
+  .mh-fail div { font-size: 0.88rem; line-height: 1.55; color: var(--ink); }
+  .mh-kv { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px 0; }
+  .mh-kv-item {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-kv-item span { color: var(--ink-soft); }
+  .mh-kv-item b { color: var(--purple); font-weight: 650; margin-left: 4px; }
+
+  /* ================= sidebar ================= */
+  section[data-testid="stSidebar"] {
+    background-color: var(--app-bg);
+    border-right: 1px solid var(--silver);
+  }
+  section[data-testid="stSidebar"] h1,
+  section[data-testid="stSidebar"] h2,
+  section[data-testid="stSidebar"] h3 {
+    color: var(--purple);
+    font-size: 1.02rem;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+  }
+  section[data-testid="stSidebar"] h4 {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin: 1.4rem 0 0.35rem 0;
+  }
+  section[data-testid="stSidebar"] p,
+  section[data-testid="stSidebar"] .stCaption {
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
+    color: var(--ink);
+    font-size: 0.82rem;
+  }
+  section[data-testid="stSidebar"] [data-baseweb="radio"] p,
+  section[data-testid="stSidebar"] [data-baseweb="checkbox"] p {
+    color: var(--ink);
+    font-size: 0.84rem;
+  }
+  section[data-testid="stSidebar"] label { font-size: 0.82rem; color: var(--ink); }
+  section[data-testid="stSidebar"] hr { border-color: rgba(197, 193, 193, 0.5); }
+
+  /* ================= widgets ================= */
+  .stButton > button {
+    background: var(--app-bg);
+    color: var(--purple);
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.86rem;
+    padding: 0.42rem 0.9rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+  .stButton > button:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+    box-shadow: var(--shadow);
+  }
+  .stButton > button[kind="primary"],
+  .stButton > button[kind="primary"]:focus,
+  .stButton > button[kind="primary"]:hover,
+  .stButton > button[kind="primary"]:active {
+    background: var(--purple);
+    color: #FFFFFF;
+    border: 1px solid var(--purple);
+    box-shadow: 0 1px 2px rgba(114, 47, 153, 0.3);
+  }
+  .stButton > button[kind="primary"]:hover {
+    background: var(--purple-deep);
+    border-color: var(--purple-deep);
+  }
+  .stButton > button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.18);
+  }
+  /* the button label is markdown - let it inherit the button's own colour */
+  .stButton > button p,
+  .stButton > button span,
+  .stButton > button div {
+    color: inherit !important;
+    font-family: inherit;
+  }
+  .stDownloadButton > button { border-radius: var(--radius-sm); }
+
+  .stTextInput input,
+  .stNumberInput input,
+  .stTextArea textarea {
+    border-radius: var(--radius-sm) !important;
+    border-color: var(--silver) !important;
+    box-shadow: var(--shadow-sm);
+    font-size: 0.86rem;
+  }
+  .stTextInput input:focus,
+  .stNumberInput input:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+
+  /* inputs, dropdowns and sliders - minimal and native */
+  [data-testid="stTextInput"] input,
+  [data-testid="stNumberInput"] input,
+  [data-testid="stTextArea"] textarea {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    color: var(--ink) !important;
+    font-size: 0.86rem;
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stTextInput"] input:focus,
+  [data-testid="stNumberInput"] input:focus,
+  [data-testid="stTextArea"] textarea:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+  [data-testid="stNumberInputContainer"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div:hover {
+    border-color: var(--purple) !important;
+  }
+  [data-testid="stSlider"] [role="slider"] {
+    background: var(--purple) !important;
+    border-color: var(--purple) !important;
+    box-shadow: 0 1px 3px rgba(114, 47, 153, 0.35);
+  }
+  [data-testid="stSlider"] [data-testid="stSliderTickBar"] {
+    background: rgba(197, 193, 193, 0.45);
+  }
+  [data-testid="stCheckbox"] label p { color: var(--ink); font-size: 0.84rem; }
+
+  div[data-testid="stExpander"] details {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    background: var(--app-bg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  div[data-testid="stExpander"] summary {
+    color: var(--purple);
+    font-weight: 650;
+    font-size: 0.94rem;
+    padding: 0.7rem 1rem;
+    transition: background 0.15s ease;
+  }
+  div[data-testid="stExpander"] summary:hover { background: rgba(114, 47, 153, 0.04); }
+  div[data-testid="stExpander"] summary svg { fill: var(--purple); }
+
+  .stApp [data-testid="stDataFrame"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .stApp [data-testid="stCaptionContainer"] { color: var(--ink-soft); }
+  .stApp hr { border-color: rgba(197, 193, 193, 0.5); }
+  .stApp code {
+    background: rgba(197, 193, 193, 0.24);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+</style>
+
+<div style='max-width:1100px;margin:0 auto;padding:18px'>
+
+    <div class="mh-hero">
+      <span class="mh-kicker"><span class="mh-dot"></span>Planner &amp;middot; ReAct Researcher &amp;middot; Verifier</span>
+      <h1>Multi-Hop Trivia Question Answering with ReAct</h1>
+      <p>One question, several hops, one verifiable answer - every Thought, Action and Observation is shown, and the verifier audits the evidence behind the chain.</p>
+    </div>
+    
+
+    <div class="mh-question">
+      <div class="mh-label">Scenario 2 - Reverse lookup chain &amp;middot; expected: ?</div>
+      <div class="mh-q">What is the capital of the country whose largest city is Sydney?</div>
+      <div class="mh-teach">teaching point</div>
+    </div>
+    
+
+    <div class="mh-agents">
+      <div class="mh-agent mh-agent-ok"><h4>Planner</h4><div class="mh-role">question decomposition</div><div class="mh-body">Split the question into <b>2 hop(s)</b> (strategy <code>pattern:capital-of-country-largest-city</code>).</div></div>
+      <div class="mh-agent mh-agent-ok"><h4>Researcher</h4><div class="mh-role">ReAct loop</div><div class="mh-body"><b>2</b> tool call(s). Stop reason: <b>ALL_HOPS_RESOLVED</b>.</div></div>
+      <div class="mh-agent mh-agent-ok"><h4>Verifier</h4><div class="mh-role">evidence review</div><div class="mh-body"><b>CONFIRMED</b> - Confirmed - every hop is backed by the corpus</div></div>
+    </div>
+    
+
+    <div class="mh-plan">
+      <h4>Planner output &mdash; hop decomposition</h4>
+      <ol><li>Which country has Sydney as its largest city?</li><li>What is the capital of the country found in hop 1?</li></ol>
+      <div class="mh-meta">
+        <b>strategy:</b> pattern:capital-of-country-largest-city &nbsp;&middot;&nbsp;
+        <b>answer type:</b> city &nbsp;&middot;&nbsp;
+        <b>hops:</b> 2
+      </div>
+      <div class="mh-meta"><div>Answer type inferred from the question: city.</div><div>Pattern match on &#x27;the capital of the country whose largest city is &lt;city&gt;&#x27;.</div></div>
+    </div>
+    
+<div class="mh-trace"><h3>ReAct trace</h3><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">dictionary_lookup</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1: I need to find the largest city of Sydney. I will use the curated dictionary with the query &quot;Sydney largest city&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>dictionary_lookup(largest_city | Sydney)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">largest_city(Sydney) = Australia  (exact key match on the curated dictionary (k = 1 by construction))</span></div>
+<div class="mh-note"><b>selection rule:</b> exact key match on the curated dictionary (k = 1 by construction)</div>
+<div class="mh-note"><div>&bull; exact key lookup over 20 curated facts.</div></div>
+<div class="mh-evi"><div class="mh-evi-cite">Source document (curated): largest_city</div></div>
+</div><div class="mh-step mh-step-repair">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">internal</span>
+<span class="mh-state mh-state-grey">BRIDGE</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1 resolved: largest_city(Sydney) = Australia. That gives me the bridge entity for hop 2 - now I need to find the capital of Australia.</div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">bridge entity: Australia</span></div>
+<div class="mh-note"><b>selection rule:</b> bridge handed to the next hop</div>
+</div><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 2</span>
+<span class="mh-tool">dictionary_lookup</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #2</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 2: I need to find the capital of Australia. I will use the curated dictionary with the query &quot;Australia capital city&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>dictionary_lookup(capital | Australia)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">capital(Australia) = Canberra  (exact key match on the curated dictionary (k = 1 by construction))</span></div>
+<div class="mh-note"><b>selection rule:</b> exact key match on the curated dictionary (k = 1 by construction)</div>
+<div class="mh-note"><div>&bull; exact key lookup over 20 curated facts.</div></div>
+<div class="mh-evi"><div class="mh-evi-cite">Source document (curated): capital</div></div>
+</div>
+    <div class="mh-terminal">
+      <div class="mh-terminal-label">FINAL ANSWER - LOOP TERMINATED</div>
+      <div class="mh-terminal-value">Canberra</div>
+      <div class="mh-terminal-note">every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    </div>
+
+    <div class="mh-final">
+      <div class="mh-final-label">FINAL ANSWER</div>
+      <div class="mh-final-value">Canberra</div>
+      <div class="mh-final-note">chain: Sydney -&gt; Australia -&gt; Canberra | every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    
+<div class="mh-verdict mh-verdict-ok">
+<h4>Verifier report &mdash; Confirmed - every hop is backed by the corpus</h4>
+<div class="mh-expl">The chain Sydney, Australia, Canberra is supported by the retrieved evidence and the final answer has the type the question asked for.</div>
+<div style="margin-top:10px"><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">completeness</span><span>All 2 planned hops resolved after 2 tool call(s).</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">chain_type</span><span>Every bridge entity has the entity type the next hop requires.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">evidence_support[hop1]</span><span>&quot;Australia&quot; comes from an exact key in the curated dictionary (confidence 0.99) - no noisy passage can outrank it.</span></div><div class="mh-check"><span class="mh-status mh-status-na">N/A</span><span class="mh-check-name">context_conflict[hop1]</span><span>Dictionary mode returns exactly one fact per key, so there is no rival passage to conflict with.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">evidence_support[hop2]</span><span>&quot;Canberra&quot; comes from an exact key in the curated dictionary (confidence 0.99) - no noisy passage can outrank it.</span></div><div class="mh-check"><span class="mh-status mh-status-na">N/A</span><span class="mh-check-name">context_conflict[hop2]</span><span>Dictionary mode returns exactly one fact per key, so there is no rival passage to conflict with.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">answer_type</span><span>The answer &quot;Canberra&quot; is a city, which matches the &quot;city&quot; type the question asks for.</span></div></div>
+</div>
+</div><hr><h2 style='color:#722F99'>Scenario 3 - Film -> person -> place</h2><hr>
+<style>
+  :root {
+    --app-bg: #FFFFFF;
+    --purple: #722F99;
+    --purple-deep: #4A1E66;
+    --silver: #C5C1C1;
+    --peach: #FEE7C8;
+    --soft-red: #FF9292;
+    --ink: #2A2233;
+    --ink-soft: #5C5468;
+    --peach-light: #F0D8C8;
+
+    --line: 1px solid var(--silver);
+    --hairline: 1px solid rgba(197, 193, 193, 0.55);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(16, 8, 32, 0.04);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 24px -8px rgba(74, 30, 102, 0.22);
+  }
+
+  /* ================= canvas ================= */
+  .stApp {
+    background-color: var(--app-bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-size: 15px;
+  }
+  .stApp [data-testid="stAppViewContainer"],
+  .stApp [data-testid="stMain"],
+  .stApp [data-testid="stMainBlockContainer"],
+  .stApp [data-testid="stHeader"],
+  .stApp [data-testid="stToolbar"] {
+    background-color: var(--app-bg);
+  }
+  .stApp [data-testid="stMainBlockContainer"] { padding-top: 1.2rem; }
+  .stApp [data-testid="stVerticalBlock"] { gap: 0.55rem; }
+  h1, h2, h3, h4, h5, h6 { color: var(--purple); }
+
+  /* ================= header ================= */
+  .mh-hero {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0 14px 0;
+    margin: 0 0 18px 0;
+    border-bottom: 1px solid var(--silver);
+    box-shadow: none;
+  }
+  .mh-hero h1 {
+    color: var(--purple);
+    margin: 6px 0 6px 0;
+    font-size: 2.05rem;
+    font-weight: 650;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .mh-hero p {
+    color: var(--silver);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    max-width: 68ch;
+  }
+  .mh-hero .mh-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--purple);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .mh-hero .mh-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--purple);
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+  /* ================= question banner ================= */
+  .mh-question {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .mh-question .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  .mh-question .mh-q {
+    font-size: 1.18rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+  .mh-question .mh-teach { color: var(--ink-soft); font-size: 0.86rem; margin-top: 6px; }
+
+  /* ================= idle / stale placeholders ================= */
+  .mh-idle {
+    background: rgba(254, 231, 200, 0.2);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-idle .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .mh-idle h4 { margin: 6px 0 8px 0; font-size: 1.05rem; font-weight: 650; color: var(--ink); }
+  .mh-idle p { margin: 0 0 18px 0; font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); }
+  .mh-idle p b { color: var(--purple); font-weight: 650; }
+  .mh-idle-steps { display: flex; gap: 14px; flex-wrap: wrap; }
+  .mh-idle-step {
+    flex: 1;
+    min-width: 190px;
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 15px;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-idle-step b { display: block; color: var(--purple); font-size: 0.88rem; font-weight: 650; }
+  .mh-idle-step span { display: block; color: var(--ink-soft); font-size: 0.82rem; margin-top: 3px; line-height: 1.5; }
+
+  /* ================= agent cards ================= */
+  .mh-agents { display: flex; gap: 16px; margin-bottom: 22px; }
+  .mh-agent {
+    flex: 1;
+    background: rgba(254, 231, 200, 0.26);
+    border: var(--line);
+    border-top: 3px solid var(--silver);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    min-height: 132px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  }
+  .mh-agent:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+  .mh-agents > .mh-agent:nth-child(1) { border-top-color: var(--purple); }
+  .mh-agents > .mh-agent:nth-child(3) { border-top-color: var(--purple); }
+  .mh-agent.mh-agent-bad {
+    border-top-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.1);
+  }
+  .mh-agent h4 {
+    margin: 0 0 3px 0;
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--purple);
+    letter-spacing: -0.1px;
+  }
+  .mh-agent .mh-role {
+    font-size: 0.67rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .mh-agent .mh-body {
+    font-size: 0.88rem;
+    margin-top: 12px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .mh-agent .mh-body b { font-weight: 650; color: var(--purple); }
+  .mh-agent .mh-body code {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.8rem;
+    background: rgba(197, 193, 193, 0.3);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+
+  /* ================= pills / tags ================= */
+  .mh-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    line-height: 1.5;
+    background: rgba(197, 193, 193, 0.34);
+    border: 1px solid rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .mh-pill.mh-pill-bad {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-pill.mh-pill-grey {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink-soft);
+  }
+  .mh-pill.mh-pill-accent {
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.32);
+    color: var(--purple);
+  }
+
+  /* ================= tabs ================= */
+  .stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
+    border-bottom: 1px solid var(--silver);
+    background: transparent;
+  }
+  .stTabs [data-baseweb="tab"] {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    color: var(--silver) !important;
+    font-weight: 500;
+    font-size: 0.92rem;
+    padding: 10px 16px !important;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .stTabs [data-baseweb="tab"]:hover {
+    color: var(--purple) !important;
+    background: transparent !important;
+  }
+  .stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: transparent !important;
+    color: var(--purple) !important;
+    font-weight: 700;
+    border-bottom: 2px solid var(--purple) !important;
+  }
+  .stTabs [data-baseweb="tab-panel"] { background: transparent; padding-top: 1rem; }
+  .stTabs [data-baseweb="tab-highlight"],
+  .stTabs [data-baseweb="tab-border"] { display: none !important; }
+
+  /* ================= planner ================= */
+  .mh-plan {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-plan h4 { margin: 0 0 10px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-plan ol { margin: 0; padding-left: 20px; }
+  .mh-plan li { margin-bottom: 7px; font-size: 0.93rem; line-height: 1.5; }
+  .mh-plan li::marker { color: var(--purple); font-weight: 700; }
+  .mh-plan .mh-meta {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.6);
+  }
+  .mh-plan .mh-meta b { color: var(--purple); font-weight: 650; }
+
+  /* ================= trace ================= */
+  .mh-trace { margin-bottom: 8px; }
+  .mh-trace h3 { font-size: 1.05rem; font-weight: 650; margin-bottom: 10px; }
+  .mh-step {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.25rem 1.25rem;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease;
+  }
+  .mh-step:hover { box-shadow: var(--shadow-lg); }
+  .mh-step.mh-step-bad {
+    border-color: rgba(255, 146, 146, 0.75);
+    background: rgba(255, 146, 146, 0.06);
+    box-shadow: none;
+  }
+  .mh-step.mh-step-repair { border-left: 3px solid var(--purple); }
+  .mh-step-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .mh-badge {
+    background: rgba(114, 47, 153, 0.1);
+    color: var(--purple);
+    border: 1px solid rgba(114, 47, 153, 0.28);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .mh-tool {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+  }
+  .mh-state {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    line-height: 1.5;
+  }
+  .mh-state-ok {
+    color: var(--purple);
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.28);
+  }
+  .mh-state-bad {
+    color: var(--ink);
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+  }
+  .mh-state-grey {
+    color: var(--ink-soft);
+    background: rgba(197, 193, 193, 0.32);
+    border-color: rgba(197, 193, 193, 0.72);
+  }
+
+  .mh-block {
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+    border-left-width: 3px;
+  }
+  .mh-tag {
+    display: inline-block;
+    min-width: 92px;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    vertical-align: top;
+  }
+  .mh-thought {
+    background: var(--peach);
+    border-color: rgba(197, 193, 193, 0.55);
+    border-left-color: var(--purple);
+  }
+  .mh-thought .mh-tag { color: var(--purple); }
+  .mh-action {
+    background: rgba(255, 146, 146, 0.16);
+    border-color: rgba(255, 146, 146, 0.5);
+    border-left-color: var(--soft-red);
+  }
+  .mh-action .mh-tag { color: var(--ink); }
+  .mh-action code {
+    font-family: "Consolas", "Courier New", monospace;
+    color: var(--ink);
+    font-size: 0.85rem;
+  }
+  .mh-observation {
+    background: rgba(197, 193, 193, 0.26);
+    border-color: var(--silver);
+    border-left-color: var(--silver);
+  }
+  .mh-observation .mh-tag { color: var(--ink-soft); }
+  .mh-obs-text {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.84rem;
+    color: var(--ink);
+  }
+
+  .mh-evi {
+    margin-top: 12px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.7);
+    padding-top: 10px;
+  }
+  .mh-evi-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.45);
+  }
+  .mh-evi-row:last-child { border-bottom: none; }
+  .mh-evi-id {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    min-width: 150px;
+  }
+  .mh-evi-txt { color: var(--ink-soft); flex: 1; }
+  .mh-evi-txt b { color: var(--ink); font-weight: 650; }
+  .mh-evi-num {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .mh-evi-row.mh-evi-decoy {
+    background: rgba(255, 146, 146, 0.14);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+  }
+  .mh-evi-row.mh-evi-noise { opacity: 0.55; }
+  .mh-evi-cite {
+    background: rgba(254, 231, 200, 0.55);
+    border-left: 3px solid var(--silver);
+    padding: 8px 12px;
+    font-size: 0.83rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--ink-soft);
+  }
+
+  /* ================= terminal strip ================= */
+  .mh-terminal {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 10px 0 18px 0;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .mh-terminal.mh-terminal-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-terminal .mh-terminal-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-terminal .mh-terminal-value {
+    color: var(--purple);
+    font-size: 1.85rem;
+    font-weight: 700;
+    margin: 6px 0 4px 0;
+    letter-spacing: -0.4px;
+  }
+  .mh-terminal.mh-terminal-bad .mh-terminal-value { color: var(--ink); }
+  .mh-terminal .mh-terminal-note { color: var(--ink-soft); font-size: 0.82rem; }
+
+  /* ================= final answer ================= */
+  .mh-final {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 4px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    margin: 18px 0 20px 0;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .mh-final .mh-final-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-final .mh-final-value {
+    color: var(--purple);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.8px;
+    margin: 8px 0 8px 0;
+  }
+  .mh-final .mh-final-note { color: var(--ink-soft); font-size: 0.84rem; }
+  .mh-final.mh-final-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-final.mh-final-bad .mh-final-label,
+  .mh-final.mh-final-bad .mh-final-note { color: var(--ink-soft); }
+  .mh-final.mh-final-bad .mh-final-value { color: var(--ink); }
+
+  /* ================= verifier ================= */
+  .mh-verdict {
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border: var(--line);
+    background: var(--app-bg);
+    box-shadow: var(--shadow);
+  }
+  .mh-verdict.mh-verdict-ok {
+    border-color: rgba(114, 47, 153, 0.45);
+    border-left: 3px solid var(--purple);
+  }
+  .mh-verdict.mh-verdict-bad {
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+  }
+  .mh-verdict h4 { margin: 0 0 8px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-verdict .mh-expl { font-size: 0.9rem; line-height: 1.6; color: var(--ink); }
+  .mh-check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    padding: 9px 0;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.5);
+    line-height: 1.5;
+  }
+  .mh-check:last-child { border-bottom: none; }
+  .mh-check .mh-check-name {
+    font-family: "Consolas", monospace;
+    font-size: 0.75rem;
+    min-width: 200px;
+    color: var(--purple);
+  }
+  .mh-status {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 2px 8px;
+    min-width: 60px;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+  .mh-status-pass {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+  .mh-status-fail {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-status-na {
+    background: rgba(197, 193, 193, 0.22);
+    border-color: rgba(197, 193, 193, 0.55);
+    color: var(--ink-soft);
+  }
+  .mh-status-warn {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+
+  /* ================= misc blocks ================= */
+  .mh-note {
+    background: rgba(197, 193, 193, 0.16);
+    border: 1px solid rgba(197, 193, 193, 0.45);
+    border-left: 3px solid var(--silver);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .mh-fail {
+    background: rgba(255, 146, 146, 0.1);
+    border: 1px solid rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 12px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-fail h4 { margin: 0 0 6px 0; color: var(--ink); font-size: 0.95rem; font-weight: 650; }
+  .mh-fail div { font-size: 0.88rem; line-height: 1.55; color: var(--ink); }
+  .mh-kv { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px 0; }
+  .mh-kv-item {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-kv-item span { color: var(--ink-soft); }
+  .mh-kv-item b { color: var(--purple); font-weight: 650; margin-left: 4px; }
+
+  /* ================= sidebar ================= */
+  section[data-testid="stSidebar"] {
+    background-color: var(--app-bg);
+    border-right: 1px solid var(--silver);
+  }
+  section[data-testid="stSidebar"] h1,
+  section[data-testid="stSidebar"] h2,
+  section[data-testid="stSidebar"] h3 {
+    color: var(--purple);
+    font-size: 1.02rem;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+  }
+  section[data-testid="stSidebar"] h4 {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin: 1.4rem 0 0.35rem 0;
+  }
+  section[data-testid="stSidebar"] p,
+  section[data-testid="stSidebar"] .stCaption {
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
+    color: var(--ink);
+    font-size: 0.82rem;
+  }
+  section[data-testid="stSidebar"] [data-baseweb="radio"] p,
+  section[data-testid="stSidebar"] [data-baseweb="checkbox"] p {
+    color: var(--ink);
+    font-size: 0.84rem;
+  }
+  section[data-testid="stSidebar"] label { font-size: 0.82rem; color: var(--ink); }
+  section[data-testid="stSidebar"] hr { border-color: rgba(197, 193, 193, 0.5); }
+
+  /* ================= widgets ================= */
+  .stButton > button {
+    background: var(--app-bg);
+    color: var(--purple);
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.86rem;
+    padding: 0.42rem 0.9rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+  .stButton > button:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+    box-shadow: var(--shadow);
+  }
+  .stButton > button[kind="primary"],
+  .stButton > button[kind="primary"]:focus,
+  .stButton > button[kind="primary"]:hover,
+  .stButton > button[kind="primary"]:active {
+    background: var(--purple);
+    color: #FFFFFF;
+    border: 1px solid var(--purple);
+    box-shadow: 0 1px 2px rgba(114, 47, 153, 0.3);
+  }
+  .stButton > button[kind="primary"]:hover {
+    background: var(--purple-deep);
+    border-color: var(--purple-deep);
+  }
+  .stButton > button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.18);
+  }
+  /* the button label is markdown - let it inherit the button's own colour */
+  .stButton > button p,
+  .stButton > button span,
+  .stButton > button div {
+    color: inherit !important;
+    font-family: inherit;
+  }
+  .stDownloadButton > button { border-radius: var(--radius-sm); }
+
+  .stTextInput input,
+  .stNumberInput input,
+  .stTextArea textarea {
+    border-radius: var(--radius-sm) !important;
+    border-color: var(--silver) !important;
+    box-shadow: var(--shadow-sm);
+    font-size: 0.86rem;
+  }
+  .stTextInput input:focus,
+  .stNumberInput input:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+
+  /* inputs, dropdowns and sliders - minimal and native */
+  [data-testid="stTextInput"] input,
+  [data-testid="stNumberInput"] input,
+  [data-testid="stTextArea"] textarea {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    color: var(--ink) !important;
+    font-size: 0.86rem;
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stTextInput"] input:focus,
+  [data-testid="stNumberInput"] input:focus,
+  [data-testid="stTextArea"] textarea:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+  [data-testid="stNumberInputContainer"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div:hover {
+    border-color: var(--purple) !important;
+  }
+  [data-testid="stSlider"] [role="slider"] {
+    background: var(--purple) !important;
+    border-color: var(--purple) !important;
+    box-shadow: 0 1px 3px rgba(114, 47, 153, 0.35);
+  }
+  [data-testid="stSlider"] [data-testid="stSliderTickBar"] {
+    background: rgba(197, 193, 193, 0.45);
+  }
+  [data-testid="stCheckbox"] label p { color: var(--ink); font-size: 0.84rem; }
+
+  div[data-testid="stExpander"] details {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    background: var(--app-bg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  div[data-testid="stExpander"] summary {
+    color: var(--purple);
+    font-weight: 650;
+    font-size: 0.94rem;
+    padding: 0.7rem 1rem;
+    transition: background 0.15s ease;
+  }
+  div[data-testid="stExpander"] summary:hover { background: rgba(114, 47, 153, 0.04); }
+  div[data-testid="stExpander"] summary svg { fill: var(--purple); }
+
+  .stApp [data-testid="stDataFrame"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .stApp [data-testid="stCaptionContainer"] { color: var(--ink-soft); }
+  .stApp hr { border-color: rgba(197, 193, 193, 0.5); }
+  .stApp code {
+    background: rgba(197, 193, 193, 0.24);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+</style>
+
+<div style='max-width:1100px;margin:0 auto;padding:18px'>
+
+    <div class="mh-hero">
+      <span class="mh-kicker"><span class="mh-dot"></span>Planner &amp;middot; ReAct Researcher &amp;middot; Verifier</span>
+      <h1>Multi-Hop Trivia Question Answering with ReAct</h1>
+      <p>One question, several hops, one verifiable answer - every Thought, Action and Observation is shown, and the verifier audits the evidence behind the chain.</p>
+    </div>
+    
+
+    <div class="mh-question">
+      <div class="mh-label">Scenario 3 - Film -&gt; person -&gt; place &amp;middot; expected: ?</div>
+      <div class="mh-q">What is the birthplace of the director of the film &#x27;Jurassic Park&#x27;?</div>
+      <div class="mh-teach">teaching point</div>
+    </div>
+    
+
+    <div class="mh-agents">
+      <div class="mh-agent mh-agent-ok"><h4>Planner</h4><div class="mh-role">question decomposition</div><div class="mh-body">Split the question into <b>2 hop(s)</b> (strategy <code>pattern:birthplace-of-director</code>).</div></div>
+      <div class="mh-agent mh-agent-ok"><h4>Researcher</h4><div class="mh-role">ReAct loop</div><div class="mh-body"><b>2</b> tool call(s). Stop reason: <b>ALL_HOPS_RESOLVED</b>.</div></div>
+      <div class="mh-agent mh-agent-ok"><h4>Verifier</h4><div class="mh-role">evidence review</div><div class="mh-body"><b>CONFIRMED</b> - Confirmed - every hop is backed by the corpus</div></div>
+    </div>
+    
+
+    <div class="mh-plan">
+      <h4>Planner output &mdash; hop decomposition</h4>
+      <ol><li>Who directed Jurassic Park?</li><li>What is the birthplace of the person found in hop 1?</li></ol>
+      <div class="mh-meta">
+        <b>strategy:</b> pattern:birthplace-of-director &nbsp;&middot;&nbsp;
+        <b>answer type:</b> place &nbsp;&middot;&nbsp;
+        <b>hops:</b> 2
+      </div>
+      <div class="mh-meta"><div>Answer type inferred from the question: place.</div><div>Pattern match on &#x27;the birthplace of the director of &lt;work&gt;&#x27;.</div></div>
+    </div>
+    
+<div class="mh-trace"><h3>ReAct trace</h3><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">dictionary_lookup</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1: I need to find the director of Jurassic Park. I will use the curated dictionary with the query &quot;Jurassic Park film director&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>dictionary_lookup(director | Jurassic Park)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">director(Jurassic Park) = Steven Spielberg  (exact key match on the curated dictionary (k = 1 by construction))</span></div>
+<div class="mh-note"><b>selection rule:</b> exact key match on the curated dictionary (k = 1 by construction)</div>
+<div class="mh-note"><div>&bull; exact key lookup over 20 curated facts.</div></div>
+<div class="mh-evi"><div class="mh-evi-cite">Source document (curated): director</div></div>
+</div><div class="mh-step mh-step-repair">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">internal</span>
+<span class="mh-state mh-state-grey">BRIDGE</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1 resolved: director(Jurassic Park) = Steven Spielberg. That gives me the bridge entity for hop 2 - now I need to find the birthplace of Steven Spielberg.</div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">bridge entity: Steven Spielberg</span></div>
+<div class="mh-note"><b>selection rule:</b> bridge handed to the next hop</div>
+</div><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 2</span>
+<span class="mh-tool">dictionary_lookup</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #2</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 2: I need to find the birthplace of Steven Spielberg. I will use the curated dictionary with the query &quot;Steven Spielberg born birthplace city&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>dictionary_lookup(birthplace | Steven Spielberg)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">birthplace(Steven Spielberg) = Cincinnati  (exact key match on the curated dictionary (k = 1 by construction))</span></div>
+<div class="mh-note"><b>selection rule:</b> exact key match on the curated dictionary (k = 1 by construction)</div>
+<div class="mh-note"><div>&bull; exact key lookup over 20 curated facts.</div></div>
+<div class="mh-evi"><div class="mh-evi-cite">Source document (curated): birthplace</div></div>
+</div>
+    <div class="mh-terminal">
+      <div class="mh-terminal-label">FINAL ANSWER - LOOP TERMINATED</div>
+      <div class="mh-terminal-value">Cincinnati</div>
+      <div class="mh-terminal-note">every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    </div>
+
+    <div class="mh-final">
+      <div class="mh-final-label">FINAL ANSWER</div>
+      <div class="mh-final-value">Cincinnati</div>
+      <div class="mh-final-note">chain: Jurassic Park -&gt; Steven Spielberg -&gt; Cincinnati | every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    
+<div class="mh-verdict mh-verdict-ok">
+<h4>Verifier report &mdash; Confirmed - every hop is backed by the corpus</h4>
+<div class="mh-expl">The chain Jurassic Park, Steven Spielberg, Cincinnati is supported by the retrieved evidence and the final answer has the type the question asked for.</div>
+<div style="margin-top:10px"><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">completeness</span><span>All 2 planned hops resolved after 2 tool call(s).</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">chain_type</span><span>Every bridge entity has the entity type the next hop requires.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">evidence_support[hop1]</span><span>&quot;Steven Spielberg&quot; comes from an exact key in the curated dictionary (confidence 0.99) - no noisy passage can outrank it.</span></div><div class="mh-check"><span class="mh-status mh-status-na">N/A</span><span class="mh-check-name">context_conflict[hop1]</span><span>Dictionary mode returns exactly one fact per key, so there is no rival passage to conflict with.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">evidence_support[hop2]</span><span>&quot;Cincinnati&quot; comes from an exact key in the curated dictionary (confidence 0.99) - no noisy passage can outrank it.</span></div><div class="mh-check"><span class="mh-status mh-status-na">N/A</span><span class="mh-check-name">context_conflict[hop2]</span><span>Dictionary mode returns exactly one fact per key, so there is no rival passage to conflict with.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">answer_type</span><span>The answer &quot;Cincinnati&quot; is a city, which matches the &quot;place&quot; type the question asks for.</span></div></div>
+</div>
+</div><hr><h2 style='color:#722F99'>Scenario 4 - Missing fact</h2><hr>
+<style>
+  :root {
+    --app-bg: #FFFFFF;
+    --purple: #722F99;
+    --purple-deep: #4A1E66;
+    --silver: #C5C1C1;
+    --peach: #FEE7C8;
+    --soft-red: #FF9292;
+    --ink: #2A2233;
+    --ink-soft: #5C5468;
+    --peach-light: #F0D8C8;
+
+    --line: 1px solid var(--silver);
+    --hairline: 1px solid rgba(197, 193, 193, 0.55);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(16, 8, 32, 0.04);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 24px -8px rgba(74, 30, 102, 0.22);
+  }
+
+  /* ================= canvas ================= */
+  .stApp {
+    background-color: var(--app-bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-size: 15px;
+  }
+  .stApp [data-testid="stAppViewContainer"],
+  .stApp [data-testid="stMain"],
+  .stApp [data-testid="stMainBlockContainer"],
+  .stApp [data-testid="stHeader"],
+  .stApp [data-testid="stToolbar"] {
+    background-color: var(--app-bg);
+  }
+  .stApp [data-testid="stMainBlockContainer"] { padding-top: 1.2rem; }
+  .stApp [data-testid="stVerticalBlock"] { gap: 0.55rem; }
+  h1, h2, h3, h4, h5, h6 { color: var(--purple); }
+
+  /* ================= header ================= */
+  .mh-hero {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0 14px 0;
+    margin: 0 0 18px 0;
+    border-bottom: 1px solid var(--silver);
+    box-shadow: none;
+  }
+  .mh-hero h1 {
+    color: var(--purple);
+    margin: 6px 0 6px 0;
+    font-size: 2.05rem;
+    font-weight: 650;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .mh-hero p {
+    color: var(--silver);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    max-width: 68ch;
+  }
+  .mh-hero .mh-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--purple);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .mh-hero .mh-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--purple);
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+  /* ================= question banner ================= */
+  .mh-question {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .mh-question .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  .mh-question .mh-q {
+    font-size: 1.18rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+  .mh-question .mh-teach { color: var(--ink-soft); font-size: 0.86rem; margin-top: 6px; }
+
+  /* ================= idle / stale placeholders ================= */
+  .mh-idle {
+    background: rgba(254, 231, 200, 0.2);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-idle .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .mh-idle h4 { margin: 6px 0 8px 0; font-size: 1.05rem; font-weight: 650; color: var(--ink); }
+  .mh-idle p { margin: 0 0 18px 0; font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); }
+  .mh-idle p b { color: var(--purple); font-weight: 650; }
+  .mh-idle-steps { display: flex; gap: 14px; flex-wrap: wrap; }
+  .mh-idle-step {
+    flex: 1;
+    min-width: 190px;
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 15px;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-idle-step b { display: block; color: var(--purple); font-size: 0.88rem; font-weight: 650; }
+  .mh-idle-step span { display: block; color: var(--ink-soft); font-size: 0.82rem; margin-top: 3px; line-height: 1.5; }
+
+  /* ================= agent cards ================= */
+  .mh-agents { display: flex; gap: 16px; margin-bottom: 22px; }
+  .mh-agent {
+    flex: 1;
+    background: rgba(254, 231, 200, 0.26);
+    border: var(--line);
+    border-top: 3px solid var(--silver);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    min-height: 132px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  }
+  .mh-agent:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+  .mh-agents > .mh-agent:nth-child(1) { border-top-color: var(--purple); }
+  .mh-agents > .mh-agent:nth-child(3) { border-top-color: var(--purple); }
+  .mh-agent.mh-agent-bad {
+    border-top-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.1);
+  }
+  .mh-agent h4 {
+    margin: 0 0 3px 0;
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--purple);
+    letter-spacing: -0.1px;
+  }
+  .mh-agent .mh-role {
+    font-size: 0.67rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .mh-agent .mh-body {
+    font-size: 0.88rem;
+    margin-top: 12px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .mh-agent .mh-body b { font-weight: 650; color: var(--purple); }
+  .mh-agent .mh-body code {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.8rem;
+    background: rgba(197, 193, 193, 0.3);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+
+  /* ================= pills / tags ================= */
+  .mh-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    line-height: 1.5;
+    background: rgba(197, 193, 193, 0.34);
+    border: 1px solid rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .mh-pill.mh-pill-bad {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-pill.mh-pill-grey {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink-soft);
+  }
+  .mh-pill.mh-pill-accent {
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.32);
+    color: var(--purple);
+  }
+
+  /* ================= tabs ================= */
+  .stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
+    border-bottom: 1px solid var(--silver);
+    background: transparent;
+  }
+  .stTabs [data-baseweb="tab"] {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    color: var(--silver) !important;
+    font-weight: 500;
+    font-size: 0.92rem;
+    padding: 10px 16px !important;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .stTabs [data-baseweb="tab"]:hover {
+    color: var(--purple) !important;
+    background: transparent !important;
+  }
+  .stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: transparent !important;
+    color: var(--purple) !important;
+    font-weight: 700;
+    border-bottom: 2px solid var(--purple) !important;
+  }
+  .stTabs [data-baseweb="tab-panel"] { background: transparent; padding-top: 1rem; }
+  .stTabs [data-baseweb="tab-highlight"],
+  .stTabs [data-baseweb="tab-border"] { display: none !important; }
+
+  /* ================= planner ================= */
+  .mh-plan {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-plan h4 { margin: 0 0 10px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-plan ol { margin: 0; padding-left: 20px; }
+  .mh-plan li { margin-bottom: 7px; font-size: 0.93rem; line-height: 1.5; }
+  .mh-plan li::marker { color: var(--purple); font-weight: 700; }
+  .mh-plan .mh-meta {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.6);
+  }
+  .mh-plan .mh-meta b { color: var(--purple); font-weight: 650; }
+
+  /* ================= trace ================= */
+  .mh-trace { margin-bottom: 8px; }
+  .mh-trace h3 { font-size: 1.05rem; font-weight: 650; margin-bottom: 10px; }
+  .mh-step {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.25rem 1.25rem;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease;
+  }
+  .mh-step:hover { box-shadow: var(--shadow-lg); }
+  .mh-step.mh-step-bad {
+    border-color: rgba(255, 146, 146, 0.75);
+    background: rgba(255, 146, 146, 0.06);
+    box-shadow: none;
+  }
+  .mh-step.mh-step-repair { border-left: 3px solid var(--purple); }
+  .mh-step-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .mh-badge {
+    background: rgba(114, 47, 153, 0.1);
+    color: var(--purple);
+    border: 1px solid rgba(114, 47, 153, 0.28);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .mh-tool {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+  }
+  .mh-state {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    line-height: 1.5;
+  }
+  .mh-state-ok {
+    color: var(--purple);
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.28);
+  }
+  .mh-state-bad {
+    color: var(--ink);
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+  }
+  .mh-state-grey {
+    color: var(--ink-soft);
+    background: rgba(197, 193, 193, 0.32);
+    border-color: rgba(197, 193, 193, 0.72);
+  }
+
+  .mh-block {
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+    border-left-width: 3px;
+  }
+  .mh-tag {
+    display: inline-block;
+    min-width: 92px;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    vertical-align: top;
+  }
+  .mh-thought {
+    background: var(--peach);
+    border-color: rgba(197, 193, 193, 0.55);
+    border-left-color: var(--purple);
+  }
+  .mh-thought .mh-tag { color: var(--purple); }
+  .mh-action {
+    background: rgba(255, 146, 146, 0.16);
+    border-color: rgba(255, 146, 146, 0.5);
+    border-left-color: var(--soft-red);
+  }
+  .mh-action .mh-tag { color: var(--ink); }
+  .mh-action code {
+    font-family: "Consolas", "Courier New", monospace;
+    color: var(--ink);
+    font-size: 0.85rem;
+  }
+  .mh-observation {
+    background: rgba(197, 193, 193, 0.26);
+    border-color: var(--silver);
+    border-left-color: var(--silver);
+  }
+  .mh-observation .mh-tag { color: var(--ink-soft); }
+  .mh-obs-text {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.84rem;
+    color: var(--ink);
+  }
+
+  .mh-evi {
+    margin-top: 12px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.7);
+    padding-top: 10px;
+  }
+  .mh-evi-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.45);
+  }
+  .mh-evi-row:last-child { border-bottom: none; }
+  .mh-evi-id {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    min-width: 150px;
+  }
+  .mh-evi-txt { color: var(--ink-soft); flex: 1; }
+  .mh-evi-txt b { color: var(--ink); font-weight: 650; }
+  .mh-evi-num {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .mh-evi-row.mh-evi-decoy {
+    background: rgba(255, 146, 146, 0.14);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+  }
+  .mh-evi-row.mh-evi-noise { opacity: 0.55; }
+  .mh-evi-cite {
+    background: rgba(254, 231, 200, 0.55);
+    border-left: 3px solid var(--silver);
+    padding: 8px 12px;
+    font-size: 0.83rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--ink-soft);
+  }
+
+  /* ================= terminal strip ================= */
+  .mh-terminal {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 10px 0 18px 0;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .mh-terminal.mh-terminal-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-terminal .mh-terminal-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-terminal .mh-terminal-value {
+    color: var(--purple);
+    font-size: 1.85rem;
+    font-weight: 700;
+    margin: 6px 0 4px 0;
+    letter-spacing: -0.4px;
+  }
+  .mh-terminal.mh-terminal-bad .mh-terminal-value { color: var(--ink); }
+  .mh-terminal .mh-terminal-note { color: var(--ink-soft); font-size: 0.82rem; }
+
+  /* ================= final answer ================= */
+  .mh-final {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 4px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    margin: 18px 0 20px 0;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .mh-final .mh-final-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-final .mh-final-value {
+    color: var(--purple);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.8px;
+    margin: 8px 0 8px 0;
+  }
+  .mh-final .mh-final-note { color: var(--ink-soft); font-size: 0.84rem; }
+  .mh-final.mh-final-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-final.mh-final-bad .mh-final-label,
+  .mh-final.mh-final-bad .mh-final-note { color: var(--ink-soft); }
+  .mh-final.mh-final-bad .mh-final-value { color: var(--ink); }
+
+  /* ================= verifier ================= */
+  .mh-verdict {
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border: var(--line);
+    background: var(--app-bg);
+    box-shadow: var(--shadow);
+  }
+  .mh-verdict.mh-verdict-ok {
+    border-color: rgba(114, 47, 153, 0.45);
+    border-left: 3px solid var(--purple);
+  }
+  .mh-verdict.mh-verdict-bad {
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+  }
+  .mh-verdict h4 { margin: 0 0 8px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-verdict .mh-expl { font-size: 0.9rem; line-height: 1.6; color: var(--ink); }
+  .mh-check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    padding: 9px 0;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.5);
+    line-height: 1.5;
+  }
+  .mh-check:last-child { border-bottom: none; }
+  .mh-check .mh-check-name {
+    font-family: "Consolas", monospace;
+    font-size: 0.75rem;
+    min-width: 200px;
+    color: var(--purple);
+  }
+  .mh-status {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 2px 8px;
+    min-width: 60px;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+  .mh-status-pass {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+  .mh-status-fail {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-status-na {
+    background: rgba(197, 193, 193, 0.22);
+    border-color: rgba(197, 193, 193, 0.55);
+    color: var(--ink-soft);
+  }
+  .mh-status-warn {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+
+  /* ================= misc blocks ================= */
+  .mh-note {
+    background: rgba(197, 193, 193, 0.16);
+    border: 1px solid rgba(197, 193, 193, 0.45);
+    border-left: 3px solid var(--silver);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .mh-fail {
+    background: rgba(255, 146, 146, 0.1);
+    border: 1px solid rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 12px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-fail h4 { margin: 0 0 6px 0; color: var(--ink); font-size: 0.95rem; font-weight: 650; }
+  .mh-fail div { font-size: 0.88rem; line-height: 1.55; color: var(--ink); }
+  .mh-kv { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px 0; }
+  .mh-kv-item {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-kv-item span { color: var(--ink-soft); }
+  .mh-kv-item b { color: var(--purple); font-weight: 650; margin-left: 4px; }
+
+  /* ================= sidebar ================= */
+  section[data-testid="stSidebar"] {
+    background-color: var(--app-bg);
+    border-right: 1px solid var(--silver);
+  }
+  section[data-testid="stSidebar"] h1,
+  section[data-testid="stSidebar"] h2,
+  section[data-testid="stSidebar"] h3 {
+    color: var(--purple);
+    font-size: 1.02rem;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+  }
+  section[data-testid="stSidebar"] h4 {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin: 1.4rem 0 0.35rem 0;
+  }
+  section[data-testid="stSidebar"] p,
+  section[data-testid="stSidebar"] .stCaption {
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
+    color: var(--ink);
+    font-size: 0.82rem;
+  }
+  section[data-testid="stSidebar"] [data-baseweb="radio"] p,
+  section[data-testid="stSidebar"] [data-baseweb="checkbox"] p {
+    color: var(--ink);
+    font-size: 0.84rem;
+  }
+  section[data-testid="stSidebar"] label { font-size: 0.82rem; color: var(--ink); }
+  section[data-testid="stSidebar"] hr { border-color: rgba(197, 193, 193, 0.5); }
+
+  /* ================= widgets ================= */
+  .stButton > button {
+    background: var(--app-bg);
+    color: var(--purple);
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.86rem;
+    padding: 0.42rem 0.9rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+  .stButton > button:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+    box-shadow: var(--shadow);
+  }
+  .stButton > button[kind="primary"],
+  .stButton > button[kind="primary"]:focus,
+  .stButton > button[kind="primary"]:hover,
+  .stButton > button[kind="primary"]:active {
+    background: var(--purple);
+    color: #FFFFFF;
+    border: 1px solid var(--purple);
+    box-shadow: 0 1px 2px rgba(114, 47, 153, 0.3);
+  }
+  .stButton > button[kind="primary"]:hover {
+    background: var(--purple-deep);
+    border-color: var(--purple-deep);
+  }
+  .stButton > button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.18);
+  }
+  /* the button label is markdown - let it inherit the button's own colour */
+  .stButton > button p,
+  .stButton > button span,
+  .stButton > button div {
+    color: inherit !important;
+    font-family: inherit;
+  }
+  .stDownloadButton > button { border-radius: var(--radius-sm); }
+
+  .stTextInput input,
+  .stNumberInput input,
+  .stTextArea textarea {
+    border-radius: var(--radius-sm) !important;
+    border-color: var(--silver) !important;
+    box-shadow: var(--shadow-sm);
+    font-size: 0.86rem;
+  }
+  .stTextInput input:focus,
+  .stNumberInput input:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+
+  /* inputs, dropdowns and sliders - minimal and native */
+  [data-testid="stTextInput"] input,
+  [data-testid="stNumberInput"] input,
+  [data-testid="stTextArea"] textarea {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    color: var(--ink) !important;
+    font-size: 0.86rem;
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stTextInput"] input:focus,
+  [data-testid="stNumberInput"] input:focus,
+  [data-testid="stTextArea"] textarea:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+  [data-testid="stNumberInputContainer"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div:hover {
+    border-color: var(--purple) !important;
+  }
+  [data-testid="stSlider"] [role="slider"] {
+    background: var(--purple) !important;
+    border-color: var(--purple) !important;
+    box-shadow: 0 1px 3px rgba(114, 47, 153, 0.35);
+  }
+  [data-testid="stSlider"] [data-testid="stSliderTickBar"] {
+    background: rgba(197, 193, 193, 0.45);
+  }
+  [data-testid="stCheckbox"] label p { color: var(--ink); font-size: 0.84rem; }
+
+  div[data-testid="stExpander"] details {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    background: var(--app-bg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  div[data-testid="stExpander"] summary {
+    color: var(--purple);
+    font-weight: 650;
+    font-size: 0.94rem;
+    padding: 0.7rem 1rem;
+    transition: background 0.15s ease;
+  }
+  div[data-testid="stExpander"] summary:hover { background: rgba(114, 47, 153, 0.04); }
+  div[data-testid="stExpander"] summary svg { fill: var(--purple); }
+
+  .stApp [data-testid="stDataFrame"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .stApp [data-testid="stCaptionContainer"] { color: var(--ink-soft); }
+  .stApp hr { border-color: rgba(197, 193, 193, 0.5); }
+  .stApp code {
+    background: rgba(197, 193, 193, 0.24);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+</style>
+
+<div style='max-width:1100px;margin:0 auto;padding:18px'>
+
+    <div class="mh-hero">
+      <span class="mh-kicker"><span class="mh-dot"></span>Planner &amp;middot; ReAct Researcher &amp;middot; Verifier</span>
+      <h1>Multi-Hop Trivia Question Answering with ReAct</h1>
+      <p>One question, several hops, one verifiable answer - every Thought, Action and Observation is shown, and the verifier audits the evidence behind the chain.</p>
+    </div>
+    
+
+    <div class="mh-question">
+      <div class="mh-label">Scenario 4 - Missing fact &amp;middot; expected: ?</div>
+      <div class="mh-q">Who is the mayor of the capital of Germany?</div>
+      <div class="mh-teach">teaching point</div>
+    </div>
+    
+
+    <div class="mh-agents">
+      <div class="mh-agent mh-agent-ok"><h4>Planner</h4><div class="mh-role">question decomposition</div><div class="mh-body">Split the question into <b>2 hop(s)</b> (strategy <code>pattern:mayor-of-capital</code>).</div></div>
+      <div class="mh-agent mh-agent-ok"><h4>Researcher</h4><div class="mh-role">ReAct loop</div><div class="mh-body"><b>3</b> tool call(s). Stop reason: <b>MISSING_INFORMATION</b>.</div></div>
+      <div class="mh-agent mh-agent-ok"><h4>Verifier</h4><div class="mh-role">evidence review</div><div class="mh-body"><b>INSUFFICIENT_EVIDENCE</b> - Missing information - the answer cannot be grounded</div></div>
+    </div>
+    
+
+    <div class="mh-plan">
+      <h4>Planner output &mdash; hop decomposition</h4>
+      <ol><li>What is the capital of Germany?</li><li>Who is the mayor of the city found in hop 1?</li></ol>
+      <div class="mh-meta">
+        <b>strategy:</b> pattern:mayor-of-capital &nbsp;&middot;&nbsp;
+        <b>answer type:</b> person &nbsp;&middot;&nbsp;
+        <b>hops:</b> 2
+      </div>
+      <div class="mh-meta"><div>Answer type inferred from the question: person.</div><div>Pattern match on &#x27;the &lt;role&gt; of the capital of &lt;country&gt;&#x27;.</div></div>
+    </div>
+    
+<div class="mh-trace"><h3>ReAct trace</h3><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">dictionary_lookup</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1: I need to find the capital of Germany. I will use the curated dictionary with the query &quot;Germany capital city&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>dictionary_lookup(capital | Germany)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">capital(Germany) = Berlin  (exact key match on the curated dictionary (k = 1 by construction))</span></div>
+<div class="mh-note"><b>selection rule:</b> exact key match on the curated dictionary (k = 1 by construction)</div>
+<div class="mh-note"><div>&bull; exact key lookup over 20 curated facts.</div></div>
+<div class="mh-evi"><div class="mh-evi-cite">Source document (curated): capital</div></div>
+</div><div class="mh-step mh-step-repair">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">internal</span>
+<span class="mh-state mh-state-grey">BRIDGE</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1 resolved: capital(Germany) = Berlin. That gives me the bridge entity for hop 2 - now I need to find the mayor of Berlin.</div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">bridge entity: Berlin</span></div>
+<div class="mh-note"><b>selection rule:</b> bridge handed to the next hop</div>
+</div><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 2</span>
+<span class="mh-tool">dictionary_lookup</span>
+<span class="mh-state mh-state-bad">NO EVIDENCE</span>
+<span class="mh-evi-num">call #2</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 2: I need to find the mayor of Berlin. I will use the curated dictionary with the query &quot;Berlin mayor&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>dictionary_lookup(mayor | Berlin)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">No key &#x27;mayor | Berlin&#x27; in the curated dictionary. The lookup table does not contain this fact.</span></div>
+<div class="mh-note"><b>selection rule:</b> no supporting passage found</div>
+<div class="mh-note"><div>&bull; exact key lookup over 20 curated facts.</div></div>
+<div class="mh-evi"><div class="mh-evi-cite">Source document (curated): No key &#x27;mayor | Berlin&#x27; in the curated dictionary. The lookup table does not contain this fact.</div></div>
+</div><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 2</span>
+<span class="mh-tool">dictionary_lookup</span>
+<span class="mh-state mh-state-bad">NO EVIDENCE</span>
+<span class="mh-evi-num">call #3</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 2: the first attempt did not surface the fact &quot;mayor&quot; of Berlin. I will broaden the query to &quot;Berlin mayor&quot; and look through more of the retrieved context.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>dictionary_lookup(mayor | Berlin)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">No key &#x27;mayor | Berlin&#x27; in the curated dictionary. The lookup table does not contain this fact.</span></div>
+<div class="mh-note"><b>selection rule:</b> no supporting passage found</div>
+<div class="mh-note"><div>&bull; exact key lookup over 20 curated facts.</div></div>
+<div class="mh-evi"><div class="mh-evi-cite">Source document (curated): No key &#x27;mayor | Berlin&#x27; in the curated dictionary. The lookup table does not contain this fact.</div></div>
+</div><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 2</span>
+<span class="mh-tool">none</span>
+<span class="mh-state mh-state-bad">MISSING INFORMATION</span>
+<span class="mh-evi-num">call #3</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 2 is unresolved: the knowledge base does not contain &quot;mayor&quot; of Berlin. Continuing would require inventing the fact, so I stop and report the missing information instead.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>stop(missing_information)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">MISSING INFORMATION: no fact &quot;mayor&quot; of Berlin is present in the knowledge base.</span></div>
+<div class="mh-note"><b>selection rule:</b> degrade gracefully instead of inventing a value</div>
+<div class="mh-note"><div>&bull; The agent refuses to guess; the run ends with an explicit gap.</div></div>
+</div>
+    <div class="mh-terminal mh-terminal-bad">
+      <div class="mh-terminal-label">LOOP TERMINATED - NO ANSWER</div>
+      <div class="mh-terminal-value">UNKNOWN - fact not in the knowledge base</div>
+      <div class="mh-terminal-note">the hop cap was never reached; the run stopped because the fact &quot;mayor of Berlin&quot; is absent from the knowledge base.</div>
+    </div>
+    </div>
+
+    <div class="mh-final mh-final-bad">
+      <div class="mh-final-label">FINAL ANSWER</div>
+      <div class="mh-final-value">UNKNOWN - fact not in the knowledge base</div>
+      <div class="mh-final-note">the hop cap was never reached; the run stopped because the fact &quot;mayor of Berlin&quot; is absent from the knowledge base.</div>
+    </div>
+    
+<div class="mh-verdict mh-verdict-bad">
+<h4>Verifier report &mdash; Missing information - the answer cannot be grounded</h4>
+<div class="mh-expl">The chain reached &quot;mayor of Berlin&quot; and found nothing in the knowledge base. The researcher degraded gracefully instead of inventing a value, so the correct outcome here is an explicit gap, not an answer.</div>
+<div style="margin-top:10px"><div class="mh-check"><span class="mh-status mh-status-fail">FAIL</span><span class="mh-check-name">completeness</span><span>The chain broke at &quot;mayor of Berlin&quot;. The knowledge base has no such fact, so no answer can be supported.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">chain_type</span><span>Every bridge entity has the entity type the next hop requires.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">evidence_support[hop1]</span><span>&quot;Berlin&quot; comes from an exact key in the curated dictionary (confidence 0.99) - no noisy passage can outrank it.</span></div><div class="mh-check"><span class="mh-status mh-status-na">N/A</span><span class="mh-check-name">context_conflict[hop1]</span><span>Dictionary mode returns exactly one fact per key, so there is no rival passage to conflict with.</span></div><div class="mh-check"><span class="mh-status mh-status-na">N/A</span><span class="mh-check-name">answer_type</span><span>No final answer was produced, so there is no answer type to check.</span></div></div>
+</div>
+</div><hr><h2 style='color:#722F99'>Scenario 5 - Poisoned first hop</h2><hr>
+<style>
+  :root {
+    --app-bg: #FFFFFF;
+    --purple: #722F99;
+    --purple-deep: #4A1E66;
+    --silver: #C5C1C1;
+    --peach: #FEE7C8;
+    --soft-red: #FF9292;
+    --ink: #2A2233;
+    --ink-soft: #5C5468;
+    --peach-light: #F0D8C8;
+
+    --line: 1px solid var(--silver);
+    --hairline: 1px solid rgba(197, 193, 193, 0.55);
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow-sm: 0 1px 2px rgba(16, 8, 32, 0.04);
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-lg: 0 10px 24px -8px rgba(74, 30, 102, 0.22);
+  }
+
+  /* ================= canvas ================= */
+  .stApp {
+    background-color: var(--app-bg);
+    color: var(--ink);
+    font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+    font-size: 15px;
+  }
+  .stApp [data-testid="stAppViewContainer"],
+  .stApp [data-testid="stMain"],
+  .stApp [data-testid="stMainBlockContainer"],
+  .stApp [data-testid="stHeader"],
+  .stApp [data-testid="stToolbar"] {
+    background-color: var(--app-bg);
+  }
+  .stApp [data-testid="stMainBlockContainer"] { padding-top: 1.2rem; }
+  .stApp [data-testid="stVerticalBlock"] { gap: 0.55rem; }
+  h1, h2, h3, h4, h5, h6 { color: var(--purple); }
+
+  /* ================= header ================= */
+  .mh-hero {
+    background: transparent;
+    border: none;
+    border-radius: 0;
+    padding: 4px 0 14px 0;
+    margin: 0 0 18px 0;
+    border-bottom: 1px solid var(--silver);
+    box-shadow: none;
+  }
+  .mh-hero h1 {
+    color: var(--purple);
+    margin: 6px 0 6px 0;
+    font-size: 2.05rem;
+    font-weight: 650;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+  }
+  .mh-hero p {
+    color: var(--silver);
+    margin: 0;
+    font-size: 0.95rem;
+    line-height: 1.55;
+    max-width: 68ch;
+  }
+  .mh-hero .mh-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    color: var(--purple);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin: 0;
+  }
+  .mh-hero .mh-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--purple);
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+  /* ================= question banner ================= */
+  .mh-question {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin-bottom: 18px;
+    box-shadow: var(--shadow);
+  }
+  .mh-question .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 700;
+  }
+  .mh-question .mh-q {
+    font-size: 1.18rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 6px;
+    line-height: 1.35;
+  }
+  .mh-question .mh-teach { color: var(--ink-soft); font-size: 0.86rem; margin-top: 6px; }
+
+  /* ================= idle / stale placeholders ================= */
+  .mh-idle {
+    background: rgba(254, 231, 200, 0.2);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 26px 28px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-idle .mh-label {
+    font-size: 0.68rem;
+    letter-spacing: 1.3px;
+    text-transform: uppercase;
+    color: var(--purple);
+    font-weight: 700;
+  }
+  .mh-idle h4 { margin: 6px 0 8px 0; font-size: 1.05rem; font-weight: 650; color: var(--ink); }
+  .mh-idle p { margin: 0 0 18px 0; font-size: 0.92rem; line-height: 1.6; color: var(--ink-soft); }
+  .mh-idle p b { color: var(--purple); font-weight: 650; }
+  .mh-idle-steps { display: flex; gap: 14px; flex-wrap: wrap; }
+  .mh-idle-step {
+    flex: 1;
+    min-width: 190px;
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 12px 15px;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-idle-step b { display: block; color: var(--purple); font-size: 0.88rem; font-weight: 650; }
+  .mh-idle-step span { display: block; color: var(--ink-soft); font-size: 0.82rem; margin-top: 3px; line-height: 1.5; }
+
+  /* ================= agent cards ================= */
+  .mh-agents { display: flex; gap: 16px; margin-bottom: 22px; }
+  .mh-agent {
+    flex: 1;
+    background: rgba(254, 231, 200, 0.26);
+    border: var(--line);
+    border-top: 3px solid var(--silver);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    min-height: 132px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease, transform 0.18s ease, border-color 0.18s ease;
+  }
+  .mh-agent:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-1px);
+  }
+  .mh-agents > .mh-agent:nth-child(1) { border-top-color: var(--purple); }
+  .mh-agents > .mh-agent:nth-child(3) { border-top-color: var(--purple); }
+  .mh-agent.mh-agent-bad {
+    border-top-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.1);
+  }
+  .mh-agent h4 {
+    margin: 0 0 3px 0;
+    font-size: 1rem;
+    font-weight: 650;
+    color: var(--purple);
+    letter-spacing: -0.1px;
+  }
+  .mh-agent .mh-role {
+    font-size: 0.67rem;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .mh-agent .mh-body {
+    font-size: 0.88rem;
+    margin-top: 12px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .mh-agent .mh-body b { font-weight: 650; color: var(--purple); }
+  .mh-agent .mh-body code {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.8rem;
+    background: rgba(197, 193, 193, 0.3);
+    border-radius: 5px;
+    padding: 1px 5px;
+    color: var(--ink);
+  }
+
+  /* ================= pills / tags ================= */
+  .mh-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 2px 10px;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    line-height: 1.5;
+    background: rgba(197, 193, 193, 0.34);
+    border: 1px solid rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .mh-pill.mh-pill-bad {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-pill.mh-pill-grey {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink-soft);
+  }
+  .mh-pill.mh-pill-accent {
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.32);
+    color: var(--purple);
+  }
+
+  /* ================= tabs ================= */
+  .stTabs [data-baseweb="tab-list"] {
+    gap: 4px;
+    border-bottom: 1px solid var(--silver);
+    background: transparent;
+  }
+  .stTabs [data-baseweb="tab"] {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 2px solid transparent !important;
+    border-radius: 0 !important;
+    color: var(--silver) !important;
+    font-weight: 500;
+    font-size: 0.92rem;
+    padding: 10px 16px !important;
+    transition: color 0.15s ease, border-color 0.15s ease;
+  }
+  .stTabs [data-baseweb="tab"]:hover {
+    color: var(--purple) !important;
+    background: transparent !important;
+  }
+  .stTabs [data-baseweb="tab"][aria-selected="true"] {
+    background: transparent !important;
+    color: var(--purple) !important;
+    font-weight: 700;
+    border-bottom: 2px solid var(--purple) !important;
+  }
+  .stTabs [data-baseweb="tab-panel"] { background: transparent; padding-top: 1rem; }
+  .stTabs [data-baseweb="tab-highlight"],
+  .stTabs [data-baseweb="tab-border"] { display: none !important; }
+
+  /* ================= planner ================= */
+  .mh-plan {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 20px;
+    box-shadow: var(--shadow);
+  }
+  .mh-plan h4 { margin: 0 0 10px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-plan ol { margin: 0; padding-left: 20px; }
+  .mh-plan li { margin-bottom: 7px; font-size: 0.93rem; line-height: 1.5; }
+  .mh-plan li::marker { color: var(--purple); font-weight: 700; }
+  .mh-plan .mh-meta {
+    font-size: 0.8rem;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.6);
+  }
+  .mh-plan .mh-meta b { color: var(--purple); font-weight: 650; }
+
+  /* ================= trace ================= */
+  .mh-trace { margin-bottom: 8px; }
+  .mh-trace h3 { font-size: 1.05rem; font-weight: 650; margin-bottom: 10px; }
+  .mh-step {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius);
+    padding: 1.1rem 1.25rem 1.25rem 1.25rem;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    transition: box-shadow 0.18s ease;
+  }
+  .mh-step:hover { box-shadow: var(--shadow-lg); }
+  .mh-step.mh-step-bad {
+    border-color: rgba(255, 146, 146, 0.75);
+    background: rgba(255, 146, 146, 0.06);
+    box-shadow: none;
+  }
+  .mh-step.mh-step-repair { border-left: 3px solid var(--purple); }
+  .mh-step-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+  }
+  .mh-badge {
+    background: rgba(114, 47, 153, 0.1);
+    color: var(--purple);
+    border: 1px solid rgba(114, 47, 153, 0.28);
+    border-radius: 6px;
+    padding: 2px 8px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+  }
+  .mh-tool {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.78rem;
+    color: var(--ink-soft);
+  }
+  .mh-state {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    padding: 2px 9px;
+    border-radius: 999px;
+    border: 1px solid transparent;
+    line-height: 1.5;
+  }
+  .mh-state-ok {
+    color: var(--purple);
+    background: rgba(114, 47, 153, 0.1);
+    border-color: rgba(114, 47, 153, 0.28);
+  }
+  .mh-state-bad {
+    color: var(--ink);
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+  }
+  .mh-state-grey {
+    color: var(--ink-soft);
+    background: rgba(197, 193, 193, 0.32);
+    border-color: rgba(197, 193, 193, 0.72);
+  }
+
+  .mh-block {
+    border-radius: var(--radius-sm);
+    padding: 10px 13px;
+    margin-bottom: 8px;
+    border: 1px solid transparent;
+    border-left-width: 3px;
+  }
+  .mh-tag {
+    display: inline-block;
+    min-width: 92px;
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    vertical-align: top;
+  }
+  .mh-thought {
+    background: var(--peach);
+    border-color: rgba(197, 193, 193, 0.55);
+    border-left-color: var(--purple);
+  }
+  .mh-thought .mh-tag { color: var(--purple); }
+  .mh-action {
+    background: rgba(255, 146, 146, 0.16);
+    border-color: rgba(255, 146, 146, 0.5);
+    border-left-color: var(--soft-red);
+  }
+  .mh-action .mh-tag { color: var(--ink); }
+  .mh-action code {
+    font-family: "Consolas", "Courier New", monospace;
+    color: var(--ink);
+    font-size: 0.85rem;
+  }
+  .mh-observation {
+    background: rgba(197, 193, 193, 0.26);
+    border-color: var(--silver);
+    border-left-color: var(--silver);
+  }
+  .mh-observation .mh-tag { color: var(--ink-soft); }
+  .mh-obs-text {
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 0.84rem;
+    color: var(--ink);
+  }
+
+  .mh-evi {
+    margin-top: 12px;
+    border-top: 1px dashed rgba(197, 193, 193, 0.7);
+    padding-top: 10px;
+  }
+  .mh-evi-row {
+    display: flex;
+    gap: 10px;
+    align-items: baseline;
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.45);
+  }
+  .mh-evi-row:last-child { border-bottom: none; }
+  .mh-evi-id {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    min-width: 150px;
+  }
+  .mh-evi-txt { color: var(--ink-soft); flex: 1; }
+  .mh-evi-txt b { color: var(--ink); font-weight: 650; }
+  .mh-evi-num {
+    font-family: "Consolas", monospace;
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    white-space: nowrap;
+  }
+  .mh-evi-row.mh-evi-decoy {
+    background: rgba(255, 146, 146, 0.14);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius-sm);
+    padding: 5px 8px;
+  }
+  .mh-evi-row.mh-evi-noise { opacity: 0.55; }
+  .mh-evi-cite {
+    background: rgba(254, 231, 200, 0.55);
+    border-left: 3px solid var(--silver);
+    padding: 8px 12px;
+    font-size: 0.83rem;
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    color: var(--ink-soft);
+  }
+
+  /* ================= terminal strip ================= */
+  .mh-terminal {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 3px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    margin: 10px 0 18px 0;
+    box-shadow: var(--shadow);
+    text-align: center;
+  }
+  .mh-terminal.mh-terminal-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-terminal .mh-terminal-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.4px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-terminal .mh-terminal-value {
+    color: var(--purple);
+    font-size: 1.85rem;
+    font-weight: 700;
+    margin: 6px 0 4px 0;
+    letter-spacing: -0.4px;
+  }
+  .mh-terminal.mh-terminal-bad .mh-terminal-value { color: var(--ink); }
+  .mh-terminal .mh-terminal-note { color: var(--ink-soft); font-size: 0.82rem; }
+
+  /* ================= final answer ================= */
+  .mh-final {
+    background: var(--app-bg);
+    border: var(--line);
+    border-left: 4px solid var(--purple);
+    border-radius: var(--radius);
+    padding: 22px 26px;
+    margin: 18px 0 20px 0;
+    text-align: center;
+    box-shadow: var(--shadow);
+  }
+  .mh-final .mh-final-label {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    letter-spacing: 2.8px;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .mh-final .mh-final-value {
+    color: var(--purple);
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.8px;
+    margin: 8px 0 8px 0;
+  }
+  .mh-final .mh-final-note { color: var(--ink-soft); font-size: 0.84rem; }
+  .mh-final.mh-final-bad {
+    border-left-color: var(--soft-red);
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+  }
+  .mh-final.mh-final-bad .mh-final-label,
+  .mh-final.mh-final-bad .mh-final-note { color: var(--ink-soft); }
+  .mh-final.mh-final-bad .mh-final-value { color: var(--ink); }
+
+  /* ================= verifier ================= */
+  .mh-verdict {
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 16px;
+    border: var(--line);
+    background: var(--app-bg);
+    box-shadow: var(--shadow);
+  }
+  .mh-verdict.mh-verdict-ok {
+    border-color: rgba(114, 47, 153, 0.45);
+    border-left: 3px solid var(--purple);
+  }
+  .mh-verdict.mh-verdict-bad {
+    background: rgba(255, 146, 146, 0.08);
+    border-color: rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+  }
+  .mh-verdict h4 { margin: 0 0 8px 0; font-size: 0.98rem; font-weight: 650; }
+  .mh-verdict .mh-expl { font-size: 0.9rem; line-height: 1.6; color: var(--ink); }
+  .mh-check {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    font-size: 0.85rem;
+    padding: 9px 0;
+    border-bottom: 1px dotted rgba(197, 193, 193, 0.5);
+    line-height: 1.5;
+  }
+  .mh-check:last-child { border-bottom: none; }
+  .mh-check .mh-check-name {
+    font-family: "Consolas", monospace;
+    font-size: 0.75rem;
+    min-width: 200px;
+    color: var(--purple);
+  }
+  .mh-status {
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.7px;
+    text-transform: uppercase;
+    border-radius: 999px;
+    padding: 2px 8px;
+    min-width: 60px;
+    text-align: center;
+    border: 1px solid transparent;
+  }
+  .mh-status-pass {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+  .mh-status-fail {
+    background: rgba(255, 146, 146, 0.32);
+    border-color: rgba(255, 146, 146, 0.85);
+    color: var(--ink);
+  }
+  .mh-status-na {
+    background: rgba(197, 193, 193, 0.22);
+    border-color: rgba(197, 193, 193, 0.55);
+    color: var(--ink-soft);
+  }
+  .mh-status-warn {
+    background: rgba(197, 193, 193, 0.34);
+    border-color: rgba(197, 193, 193, 0.75);
+    color: var(--ink);
+  }
+
+  /* ================= misc blocks ================= */
+  .mh-note {
+    background: rgba(197, 193, 193, 0.16);
+    border: 1px solid rgba(197, 193, 193, 0.45);
+    border-left: 3px solid var(--silver);
+    border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+    padding: 9px 14px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .mh-fail {
+    background: rgba(255, 146, 146, 0.1);
+    border: 1px solid rgba(255, 146, 146, 0.65);
+    border-left: 3px solid var(--soft-red);
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin: 12px 0;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-fail h4 { margin: 0 0 6px 0; color: var(--ink); font-size: 0.95rem; font-weight: 650; }
+  .mh-fail div { font-size: 0.88rem; line-height: 1.55; color: var(--ink); }
+  .mh-kv { display: flex; flex-wrap: wrap; gap: 8px; margin: 6px 0 12px 0; }
+  .mh-kv-item {
+    background: var(--app-bg);
+    border: var(--line);
+    border-radius: var(--radius-sm);
+    padding: 7px 12px;
+    font-size: 0.8rem;
+    box-shadow: var(--shadow-sm);
+  }
+  .mh-kv-item span { color: var(--ink-soft); }
+  .mh-kv-item b { color: var(--purple); font-weight: 650; margin-left: 4px; }
+
+  /* ================= sidebar ================= */
+  section[data-testid="stSidebar"] {
+    background-color: var(--app-bg);
+    border-right: 1px solid var(--silver);
+  }
+  section[data-testid="stSidebar"] h1,
+  section[data-testid="stSidebar"] h2,
+  section[data-testid="stSidebar"] h3 {
+    color: var(--purple);
+    font-size: 1.02rem;
+    font-weight: 650;
+    letter-spacing: -0.2px;
+  }
+  section[data-testid="stSidebar"] h4 {
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    margin: 1.4rem 0 0.35rem 0;
+  }
+  section[data-testid="stSidebar"] p,
+  section[data-testid="stSidebar"] .stCaption {
+    color: var(--ink-soft);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+  section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {
+    color: var(--ink);
+    font-size: 0.82rem;
+  }
+  section[data-testid="stSidebar"] [data-baseweb="radio"] p,
+  section[data-testid="stSidebar"] [data-baseweb="checkbox"] p {
+    color: var(--ink);
+    font-size: 0.84rem;
+  }
+  section[data-testid="stSidebar"] label { font-size: 0.82rem; color: var(--ink); }
+  section[data-testid="stSidebar"] hr { border-color: rgba(197, 193, 193, 0.5); }
+
+  /* ================= widgets ================= */
+  .stButton > button {
+    background: var(--app-bg);
+    color: var(--purple);
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    font-size: 0.86rem;
+    padding: 0.42rem 0.9rem;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }
+  .stButton > button:hover {
+    border-color: var(--purple);
+    color: var(--purple);
+    box-shadow: var(--shadow);
+  }
+  .stButton > button[kind="primary"],
+  .stButton > button[kind="primary"]:focus,
+  .stButton > button[kind="primary"]:hover,
+  .stButton > button[kind="primary"]:active {
+    background: var(--purple);
+    color: #FFFFFF;
+    border: 1px solid var(--purple);
+    box-shadow: 0 1px 2px rgba(114, 47, 153, 0.3);
+  }
+  .stButton > button[kind="primary"]:hover {
+    background: var(--purple-deep);
+    border-color: var(--purple-deep);
+  }
+  .stButton > button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.18);
+  }
+  /* the button label is markdown - let it inherit the button's own colour */
+  .stButton > button p,
+  .stButton > button span,
+  .stButton > button div {
+    color: inherit !important;
+    font-family: inherit;
+  }
+  .stDownloadButton > button { border-radius: var(--radius-sm); }
+
+  .stTextInput input,
+  .stNumberInput input,
+  .stTextArea textarea {
+    border-radius: var(--radius-sm) !important;
+    border-color: var(--silver) !important;
+    box-shadow: var(--shadow-sm);
+    font-size: 0.86rem;
+  }
+  .stTextInput input:focus,
+  .stNumberInput input:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+
+  /* inputs, dropdowns and sliders - minimal and native */
+  [data-testid="stTextInput"] input,
+  [data-testid="stNumberInput"] input,
+  [data-testid="stTextArea"] textarea {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    color: var(--ink) !important;
+    font-size: 0.86rem;
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stTextInput"] input:focus,
+  [data-testid="stNumberInput"] input:focus,
+  [data-testid="stTextArea"] textarea:focus {
+    border-color: var(--purple) !important;
+    box-shadow: 0 0 0 3px rgba(114, 47, 153, 0.14) !important;
+  }
+  [data-testid="stNumberInputContainer"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div {
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius-sm) !important;
+    background: var(--app-bg) !important;
+    box-shadow: var(--shadow-sm);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  [data-testid="stSelectbox"] [data-baseweb="select"] > div:hover {
+    border-color: var(--purple) !important;
+  }
+  [data-testid="stSlider"] [role="slider"] {
+    background: var(--purple) !important;
+    border-color: var(--purple) !important;
+    box-shadow: 0 1px 3px rgba(114, 47, 153, 0.35);
+  }
+  [data-testid="stSlider"] [data-testid="stSliderTickBar"] {
+    background: rgba(197, 193, 193, 0.45);
+  }
+  [data-testid="stCheckbox"] label p { color: var(--ink); font-size: 0.84rem; }
+
+  div[data-testid="stExpander"] details {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    background: var(--app-bg);
+    box-shadow: var(--shadow-sm);
+    overflow: hidden;
+  }
+  div[data-testid="stExpander"] summary {
+    color: var(--purple);
+    font-weight: 650;
+    font-size: 0.94rem;
+    padding: 0.7rem 1rem;
+    transition: background 0.15s ease;
+  }
+  div[data-testid="stExpander"] summary:hover { background: rgba(114, 47, 153, 0.04); }
+  div[data-testid="stExpander"] summary svg { fill: var(--purple); }
+
+  .stApp [data-testid="stDataFrame"] {
+    border: 1px solid var(--silver);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+
+  .stApp [data-testid="stCaptionContainer"] { color: var(--ink-soft); }
+  .stApp hr { border-color: rgba(197, 193, 193, 0.5); }
+  .stApp code {
+    background: rgba(197, 193, 193, 0.24);
+    border-radius: 5px;
+    padding: 1px 5px;
+  }
+</style>
+
+<div style='max-width:1100px;margin:0 auto;padding:18px'>
+
+    <div class="mh-hero">
+      <span class="mh-kicker"><span class="mh-dot"></span>Planner &amp;middot; ReAct Researcher &amp;middot; Verifier</span>
+      <h1>Multi-Hop Trivia Question Answering with ReAct</h1>
+      <p>One question, several hops, one verifiable answer - every Thought, Action and Observation is shown, and the verifier audits the evidence behind the chain.</p>
+    </div>
+    
+
+    <div class="mh-question">
+      <div class="mh-label">Scenario 5 - Poisoned first hop &amp;middot; expected: ?</div>
+      <div class="mh-q">What is the capital of the country where the Eiffel Tower is located?</div>
+      <div class="mh-teach">teaching point</div>
+    </div>
+    
+
+    <div class="mh-agents">
+      <div class="mh-agent mh-agent-ok"><h4>Planner</h4><div class="mh-role">question decomposition</div><div class="mh-body">Split the question into <b>2 hop(s)</b> (strategy <code>pattern:capital-of-country-where</code>).</div></div>
+      <div class="mh-agent mh-agent-bad"><h4>Researcher</h4><div class="mh-role">ReAct loop</div><div class="mh-body"><b>2</b> tool call(s). Stop reason: <b>ALL_HOPS_RESOLVED</b>.</div></div>
+      <div class="mh-agent mh-agent-ok"><h4>Verifier</h4><div class="mh-role">evidence review</div><div class="mh-body"><b>CONFIRMED</b> - Confirmed - every hop is backed by the corpus</div></div>
+    </div>
+    
+
+    <div class="mh-plan">
+      <h4>Planner output &mdash; hop decomposition</h4>
+      <ol><li>In which country is Eiffel Tower located?</li><li>What is the capital of the country found in hop 1?</li></ol>
+      <div class="mh-meta">
+        <b>strategy:</b> pattern:capital-of-country-where &nbsp;&middot;&nbsp;
+        <b>answer type:</b> city &nbsp;&middot;&nbsp;
+        <b>hops:</b> 2
+      </div>
+      <div class="mh-meta"><div>Answer type inferred from the question: city.</div><div>Pattern match on &#x27;the capital of the country where &lt;entity&gt; is located&#x27;.</div></div>
+    </div>
+    
+<div class="mh-trace"><h3>ReAct trace</h3><div class="mh-step mh-step-bad">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">chroma_search</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1: I need to find the country where Eiffel Tower. I will use the Chroma RAG index with the query &quot;Eiffel Tower location country&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>chroma_search(&quot;Eiffel Tower location country&quot;)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">location(Eiffel Tower) = Japan  (top-ranked passage (no majority available in the context window))</span></div>
+<div class="mh-note"><b>selection rule:</b> top-ranked passage (no majority available in the context window)</div>
+<div class="mh-note"><div>&bull; scanned 25 documents, kept 1 in context, 0 irrelevant to this hop.</div><div>&bull; low-authority documents in context: n_eiffel_japan</div></div>
+<div class="mh-evi"><div class="mh-evi-row mh-evi-decoy"><span class="mh-evi-id">n_eiffel_japan</span><span class="mh-evi-txt">TravelForumAggregator &rarr; <b>Japan</b> <span class="mh-pill mh-pill-bad">low authority</span></span><span class="mh-evi-num">sim 0.821 &middot; conf 0.30</span></div></div>
+</div><div class="mh-step mh-step-bad">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">internal</span>
+<span class="mh-state mh-state-grey">BRIDGE</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1 resolved: location(Eiffel Tower) = Japan. That gives me the bridge entity for hop 2 - now I need to find the capital of Japan.</div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">bridge entity: Japan</span></div>
+<div class="mh-note"><b>selection rule:</b> bridge handed to the next hop</div>
+</div><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 2</span>
+<span class="mh-tool">chroma_search</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #2</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 2: I need to find the capital of Japan. I will use the Chroma RAG index with the query &quot;Japan capital city&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>chroma_search(&quot;Japan capital city&quot;)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">capital(Japan) = Tokyo  (top-ranked passage (no majority available in the context window))</span></div>
+<div class="mh-note"><b>selection rule:</b> top-ranked passage (no majority available in the context window)</div>
+<div class="mh-note"><div>&bull; scanned 25 documents, kept 1 in context, 0 irrelevant to this hop.</div></div>
+<div class="mh-evi"><div class="mh-evi-row"><span class="mh-evi-id">f_japan_capital</span><span class="mh-evi-txt">Curated KB &rarr; <b>Tokyo</b> </span><span class="mh-evi-num">sim 0.680 &middot; conf 0.99</span></div></div>
+</div>
+    <div class="mh-terminal">
+      <div class="mh-terminal-label">FINAL ANSWER - LOOP TERMINATED</div>
+      <div class="mh-terminal-value">Tokyo</div>
+      <div class="mh-terminal-note">every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    </div>
+
+    <div class="mh-final mh-final-bad">
+      <div class="mh-final-label">FINAL ANSWER</div>
+      <div class="mh-final-value">Tokyo</div>
+      <div class="mh-final-note">chain: Eiffel Tower -&gt; Japan -&gt; Tokyo | every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    
+<div class="mh-verdict mh-verdict-bad">
+<h4>Verifier report &mdash; Rejected - evidence_support[hop1] failed at hop 1</h4>
+<div class="mh-expl">Hop 1 is not properly supported: The only support for &quot;Japan&quot; is a low-authority document (n_eiffel_japan, confidence 0.30) with no corroboration. The value may be stale or simply wrong. Hop 1 was poisoned. The researcher took &quot;Japan&quot; for location(Eiffel Tower) from the top-ranked passage, but Re-retrieving &quot;location of Eiffel Tower&quot; with a stricter query and a wider context (3 passages) shows the passages for &quot;France&quot; out-voting &quot;Japan&quot; (1.12 vs 0.22). The value the researcher took is not the consensus of the corpus. Because hop 1 fed the bridge entity into hop 2 (capital), the error propagated into the final answer &quot;Tokyo&quot;. Repair available: re-run the chain with hop 1 = &quot;France&quot;. &quot;France&quot; carries the stronger support (1.12 vs 0.22) across 2 independent passage(s).</div>
+<div class="mh-note"><b>Repair:</b> hop 1 is re-run with <b>France</b>. &quot;France&quot; carries the stronger support (1.12 vs 0.22) across 2 independent passage(s).</div>
+<div style="margin-top:10px"><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">completeness</span><span>All 2 planned hops resolved after 2 tool call(s).</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">chain_type</span><span>Every bridge entity has the entity type the next hop requires.</span></div><div class="mh-check"><span class="mh-status mh-status-fail">FAIL</span><span class="mh-check-name">evidence_support[hop1]</span><span>The only support for &quot;Japan&quot; is a low-authority document (n_eiffel_japan, confidence 0.30) with no corroboration. The value may be stale or simply wrong.</span></div><div class="mh-check"><span class="mh-status mh-status-fail">FAIL</span><span class="mh-check-name">context_conflict[hop1]</span><span>Re-retrieving &quot;location of Eiffel Tower&quot; with a stricter query and a wider context (3 passages) shows the passages for &quot;France&quot; out-voting &quot;Japan&quot; (1.12 vs 0.22). The value the researcher took is not the consensus of the corpus.</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">evidence_support[hop2]</span><span>&quot;Tokyo&quot; is supported by 1 retrieved passage(s) (best confidence 0.99).</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">context_conflict[hop2]</span><span>A stricter re-retrieval does not out-vote &quot;Tokyo&quot; (support 0.66).</span></div><div class="mh-check"><span class="mh-status mh-status-pass">PASS</span><span class="mh-check-name">answer_type</span><span>The answer &quot;Tokyo&quot; is a city, which matches the &quot;city&quot; type the question asks for.</span></div></div>
+</div>
+<div class="mh-trace"><h3>Recovery trace</h3><div class="mh-step mh-step-repair">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">verifier_repair</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1: the Verifier rejected the retrieved value and re-ran the lookup. I am accepting the corrected bridge France and continuing the chain from there.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>accept_verified_fact(location=France)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">bridge replaced with France (verified support).</span></div>
+<div class="mh-note"><b>selection rule:</b> verifier-approved correction</div>
+<div class="mh-note"><div>&bull; Error propagation broken: the second hop now uses the verified bridge.</div></div>
+</div><div class="mh-step mh-step-repair">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 1</span>
+<span class="mh-tool">internal</span>
+<span class="mh-state mh-state-grey">BRIDGE</span>
+<span class="mh-evi-num">call #1</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 1 resolved: location(Eiffel Tower) = France. That gives me the bridge entity for hop 2 - now I need to find the capital of France.</div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">bridge entity: France</span></div>
+<div class="mh-note"><b>selection rule:</b> bridge handed to the next hop</div>
+</div><div class="mh-step">
+<div class="mh-step-top">
+<span class="mh-badge">HOP 2</span>
+<span class="mh-tool">chroma_search</span>
+<span class="mh-state mh-state-ok">RESOLVED</span>
+<span class="mh-evi-num">call #2</span>
+</div>
+<div class="mh-block mh-thought"><span class="mh-tag">Thought</span>Hop 2: I need to find the capital of France. I will use the Chroma RAG index with the query &quot;France capital city&quot;.</div>
+<div class="mh-block mh-action"><span class="mh-tag">ACTION</span><code>chroma_search(&quot;France capital city&quot;)</code></div>
+<div class="mh-block mh-observation"><span class="mh-tag">OBSERVATION</span><span class="mh-obs-text">capital(France) = Paris  (top-ranked passage (no majority available in the context window))</span></div>
+<div class="mh-note"><b>selection rule:</b> top-ranked passage (no majority available in the context window)</div>
+<div class="mh-note"><div>&bull; scanned 25 documents, kept 1 in context, 0 irrelevant to this hop.</div></div>
+<div class="mh-evi"><div class="mh-evi-row"><span class="mh-evi-id">f_france_capital</span><span class="mh-evi-txt">Curated KB &rarr; <b>Paris</b> </span><span class="mh-evi-num">sim 0.686 &middot; conf 0.99</span></div></div>
+</div>
+    <div class="mh-terminal">
+      <div class="mh-terminal-label">FINAL ANSWER - LOOP TERMINATED</div>
+      <div class="mh-terminal-value">Paris</div>
+      <div class="mh-terminal-note">every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    </div>
+
+    <div class="mh-final">
+      <div class="mh-final-label">FINAL ANSWER</div>
+      <div class="mh-final-value">Paris</div>
+      <div class="mh-final-note">chain: Eiffel Tower -&gt; France -&gt; Paris | every hop in the plan resolved after 2 tool call(s); the hop cap was 4.</div>
+    </div>
+    
+</div></body></html>

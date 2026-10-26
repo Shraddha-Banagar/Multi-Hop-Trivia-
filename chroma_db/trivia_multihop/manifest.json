@@ -1,0 +1,13 @@
+{
+  "name": "trivia_multihop",
+  "format_version": 1,
+  "embedding": {
+    "type": "tfidf-bow",
+    "version": 1
+  },
+  "document_count": 25,
+  "vocabulary_size": 126,
+  "corpus_hash": "2fa4abe469f91a7fa8ac862d8bf772948ccbab4eb9481f85d602250a95cec6de",
+  "documents": "documents.json",
+  "vectors": "vectors.json"
+}
