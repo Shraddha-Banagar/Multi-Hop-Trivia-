@@ -40,8 +40,10 @@ CSS = f"""
     --hairline: 1px solid {rgba(SILVER, 0.55)};
     --radius: 12px;
     --radius-sm: 8px;
+    --radius-lg: 16px;
     --shadow-sm: 0 1px 2px rgba(16, 8, 32, 0.04);
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 8px 20px -10px rgba(74, 30, 102, 0.24);
     --shadow-lg: 0 10px 24px -8px rgba(74, 30, 102, 0.22);
   }}
 
@@ -54,39 +56,244 @@ CSS = f"""
   }}
   .stApp [data-testid="stAppViewContainer"],
   .stApp [data-testid="stMain"],
-  .stApp [data-testid="stMainBlockContainer"],
-  .stApp [data-testid="stHeader"],
-  .stApp [data-testid="stToolbar"] {{
+  .stApp [data-testid="stMainBlockContainer"] {{
     background-color: var(--app-bg);
   }}
-  .stApp [data-testid="stMainBlockContainer"] {{ padding-top: 1.2rem; }}
+  .stApp [data-testid="stHeader"],
+  .stApp [data-testid="stToolbar"],
+  .stApp [data-testid="stDecoration"],
+  .stApp #MainMenu,
+  .stApp footer {{ display: none !important; }}
+  .stApp [data-testid="stMainBlockContainer"] {{
+    padding-top: 1.35rem;
+    max-width: 1240px;
+  }}
   .stApp [data-testid="stVerticalBlock"] {{ gap: 0.55rem; }}
   h1, h2, h3, h4, h5, h6 {{ color: var(--purple); }}
 
-  /* ================= header ================= */
-  .mh-hero {{
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    padding: 4px 0 14px 0;
-    margin: 0 0 18px 0;
+  /* ================= top navigation ================= */
+  .st-key-mh-navbar {{
     border-bottom: 1px solid var(--silver);
-    box-shadow: none;
+    padding-bottom: 12px;
+    margin-bottom: 20px;
+  }}
+  .st-key-mh-navbar [data-testid="stHorizontalBlock"] {{
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: nowrap;
+  }}
+  .mh-navbar {{
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    min-height: 44px;
+  }}
+  .mh-brand-mark {{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 11px;
+    background: linear-gradient(145deg, var(--purple), var(--purple-deep));
+    color: #FFFFFF;
+    font-size: 0.76rem;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    box-shadow: 0 6px 14px -6px {rgba(PURPLE, 0.55)};
+    flex: 0 0 auto;
+  }}
+  .mh-brand {{
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    min-width: 0;
+  }}
+  .mh-brand-name {{
+    color: var(--purple);
+    font-size: 1rem;
+    font-weight: 700;
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+  }}
+  .mh-brand-sub {{
+    color: var(--ink-soft);
+    font-size: 0.66rem;
+    font-weight: 650;
+    letter-spacing: 0.9px;
+    text-transform: uppercase;
+  }}
+  .mh-nav-badge {{
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: auto;
+    padding: 4px 10px;
+    border: 1px solid {rgba(SILVER, 0.75)};
+    border-radius: 999px;
+    background: {rgba(PEACH, 0.34)};
+    color: var(--ink-soft);
+    font-size: 0.62rem;
+    font-weight: 750;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }}
+  .mh-nav-dot {{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--purple);
+    box-shadow: 0 0 0 3px {rgba(PURPLE, 0.12)};
+  }}
+
+  /* settings gear + popover */
+  [data-testid="stPopoverButton"] {{
+    width: 64px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px !important;
+    border-radius: 11px !important;
+    background: var(--app-bg) !important;
+    border: 1px solid var(--silver) !important;
+    color: var(--purple) !important;
+    font-size: 1.15rem !important;
+    line-height: 1;
+    box-shadow: var(--shadow-sm);
+    transition: all 0.15s ease;
+  }}
+  [data-testid="stPopoverButton"]:hover {{
+    border-color: var(--purple) !important;
+    background: {rgba(PURPLE, 0.06)} !important;
+    box-shadow: var(--shadow);
+    transform: translateY(-1px);
+  }}
+  [data-testid="stPopoverButton"]:focus-visible {{
+    outline: none !important;
+    box-shadow: 0 0 0 3px {rgba(PURPLE, 0.18)} !important;
+  }}
+  [data-testid="stPopoverButton"] p {{ font-size: 1.15rem !important; line-height: 1; }}
+  [data-testid="stPopoverBody"] {{
+    background: var(--app-bg) !important;
+    border: 1px solid var(--silver) !important;
+    border-radius: var(--radius) !important;
+    box-shadow: 0 18px 48px -12px {rgba(PURPLE_DEEP, 0.30)} !important;
+    width: min(94vw, 420px) !important;
+    max-height: min(78vh, 780px);
+    overflow-y: auto;
+    padding: 4px 18px 18px !important;
+  }}
+  [data-testid="stPopoverBody"]::-webkit-scrollbar {{ width: 8px; }}
+  [data-testid="stPopoverBody"]::-webkit-scrollbar-thumb {{
+    background: {rgba(SILVER, 0.85)};
+    border-radius: 999px;
+  }}
+  [data-testid="stPopoverBody"]::-webkit-scrollbar-track {{ background: transparent; }}
+  [data-testid="stPopoverBody"] [data-testid="stWidgetLabel"] p,
+  [data-testid="stPopoverBody"] label {{
+    color: var(--ink);
+    font-size: 0.78rem;
+  }}
+  [data-testid="stPopoverBody"] [data-testid="stCaptionContainer"],
+  [data-testid="stPopoverBody"] .stCaption {{
+    color: var(--ink-soft);
+    font-size: 0.72rem;
+    line-height: 1.45;
+  }}
+  [data-testid="stPopoverBody"] [data-baseweb="radio"] p,
+  [data-testid="stPopoverBody"] [data-baseweb="checkbox"] p {{
+    color: var(--ink);
+    font-size: 0.78rem;
+  }}
+  [data-testid="stPopoverBody"] [data-testid="stHorizontalBlock"] {{ gap: 0.55rem; }}
+  [data-testid="stPopoverBody"] .stButton > button {{ font-size: 0.8rem; }}
+
+  .mh-settings-intro {{
+    padding: 14px 0 12px;
+    border-bottom: 1px solid {rgba(SILVER, 0.55)};
+  }}
+  .mh-settings-kicker {{
+    color: var(--purple);
+    font-size: 0.64rem;
+    font-weight: 800;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+  }}
+  .mh-settings-lead {{
+    color: var(--ink-soft);
+    font-size: 0.78rem;
+    line-height: 1.5;
+    margin-top: 4px;
+  }}
+  .mh-settings-lead b {{ color: var(--purple); }}
+  .mh-settings-head {{
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin: 16px 0 6px 0;
+    flex-wrap: wrap;
+  }}
+  .mh-settings-num {{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 6px;
+    background: {rgba(PURPLE, 0.10)};
+    border: 1px solid {rgba(PURPLE, 0.24)};
+    color: var(--purple);
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+  }}
+  .mh-settings-title {{
+    color: var(--ink);
+    font-size: 0.75rem;
+    font-weight: 750;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }}
+  .mh-settings-caption {{
+    color: var(--ink-soft);
+    font-size: 0.68rem;
+    margin-left: auto;
+    text-align: right;
+  }}
+  .mh-settings-divider {{
+    border-top: 1px solid {rgba(SILVER, 0.55)};
+    margin: 18px 0 2px 0;
+  }}
+  .mh-settings-table {{ max-height: 180px; overflow: auto; }}
+  .mh-settings-table table {{ font-size: 0.72rem !important; }}
+
+  /* ================= page header ================= */
+  .mh-hero {{
+    background: linear-gradient(135deg, {rgba(PEACH, 0.24)} 0%, {rgba(APP_BG, 0)} 62%);
+    border: var(--line);
+    border-radius: var(--radius-lg);
+    padding: 22px 26px 20px 26px;
+    margin: 0 0 18px 0;
+    box-shadow: var(--shadow-sm);
   }}
   .mh-hero h1 {{
     color: var(--purple);
-    margin: 6px 0 6px 0;
+    margin: 6px 0 7px 0;
     font-size: 2.05rem;
     font-weight: 650;
-    letter-spacing: -0.5px;
-    line-height: 1.2;
+    letter-spacing: -0.6px;
+    line-height: 1.18;
   }}
   .mh-hero p {{
-    color: var(--silver);
+    color: var(--ink-soft);
     margin: 0;
-    font-size: 0.95rem;
-    line-height: 1.55;
-    max-width: 68ch;
+    font-size: 0.94rem;
+    line-height: 1.58;
+    max-width: 72ch;
   }}
   .mh-hero .mh-kicker {{
     display: inline-flex;
@@ -114,10 +321,12 @@ CSS = f"""
     border: var(--line);
     border-left: 3px solid var(--purple);
     border-radius: var(--radius);
-    padding: 16px 20px;
+    padding: 17px 21px;
     margin-bottom: 18px;
-    box-shadow: var(--shadow);
+    box-shadow: var(--shadow-md);
+    transition: box-shadow 0.18s ease;
   }}
+  .mh-question:hover {{ box-shadow: var(--shadow-lg); }}
   .mh-question .mh-label {{
     font-size: 0.68rem;
     letter-spacing: 1.3px;
@@ -265,8 +474,8 @@ CSS = f"""
     border: none !important;
     border-bottom: 2px solid transparent !important;
     border-radius: 0 !important;
-    color: var(--silver) !important;
-    font-weight: 500;
+    color: var(--ink-soft) !important;
+    font-weight: 550;
     font-size: 0.92rem;
     padding: 10px 16px !important;
     transition: color 0.15s ease, border-color 0.15s ease;
@@ -636,44 +845,12 @@ CSS = f"""
   .mh-kv-item span {{ color: var(--ink-soft); }}
   .mh-kv-item b {{ color: var(--purple); font-weight: 650; margin-left: 4px; }}
 
-  /* ================= sidebar ================= */
-  section[data-testid="stSidebar"] {{
-    background-color: var(--app-bg);
-    border-right: 1px solid var(--silver);
+  /* ================= sidebar (removed - settings live in the header) ================= */
+  section[data-testid="stSidebar"],
+  [data-testid="stSidebarCollapsedControl"],
+  [data-testid="collapsedControl"] {{
+    display: none !important;
   }}
-  section[data-testid="stSidebar"] h1,
-  section[data-testid="stSidebar"] h2,
-  section[data-testid="stSidebar"] h3 {{
-    color: var(--purple);
-    font-size: 1.02rem;
-    font-weight: 650;
-    letter-spacing: -0.2px;
-  }}
-  section[data-testid="stSidebar"] h4 {{
-    color: var(--ink-soft);
-    font-size: 0.68rem;
-    font-weight: 700;
-    letter-spacing: 1.2px;
-    text-transform: uppercase;
-    margin: 1.4rem 0 0.35rem 0;
-  }}
-  section[data-testid="stSidebar"] p,
-  section[data-testid="stSidebar"] .stCaption {{
-    color: var(--ink-soft);
-    font-size: 0.8rem;
-    line-height: 1.5;
-  }}
-  section[data-testid="stSidebar"] [data-testid="stWidgetLabel"] p {{
-    color: var(--ink);
-    font-size: 0.82rem;
-  }}
-  section[data-testid="stSidebar"] [data-baseweb="radio"] p,
-  section[data-testid="stSidebar"] [data-baseweb="checkbox"] p {{
-    color: var(--ink);
-    font-size: 0.84rem;
-  }}
-  section[data-testid="stSidebar"] label {{ font-size: 0.82rem; color: var(--ink); }}
-  section[data-testid="stSidebar"] hr {{ border-color: {rgba(SILVER, 0.5)}; }}
 
   /* ================= widgets ================= */
   .stButton > button {{
@@ -681,9 +858,9 @@ CSS = f"""
     color: var(--purple);
     border: 1px solid var(--silver);
     border-radius: var(--radius-sm);
-    font-weight: 600;
+    font-weight: 650;
     font-size: 0.86rem;
-    padding: 0.42rem 0.9rem;
+    padding: 0.44rem 0.9rem;
     box-shadow: var(--shadow-sm);
     transition: all 0.15s ease;
   }}
@@ -691,19 +868,21 @@ CSS = f"""
     border-color: var(--purple);
     color: var(--purple);
     box-shadow: var(--shadow);
+    transform: translateY(-1px);
   }}
   .stButton > button[kind="primary"],
   .stButton > button[kind="primary"]:focus,
   .stButton > button[kind="primary"]:hover,
   .stButton > button[kind="primary"]:active {{
-    background: var(--purple);
+    background: linear-gradient(145deg, var(--purple), var(--purple-deep));
     color: #FFFFFF;
     border: 1px solid var(--purple);
-    box-shadow: 0 1px 2px {rgba(PURPLE, 0.30)};
+    box-shadow: 0 4px 10px -4px {rgba(PURPLE, 0.55)};
   }}
   .stButton > button[kind="primary"]:hover {{
-    background: var(--purple-deep);
+    background: linear-gradient(145deg, var(--purple-deep), var(--purple-deep));
     border-color: var(--purple-deep);
+    box-shadow: 0 7px 16px -6px {rgba(PURPLE, 0.60)};
   }}
   .stButton > button:focus-visible {{
     outline: none;

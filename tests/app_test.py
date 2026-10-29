@@ -139,7 +139,7 @@ if __name__ == "__main__":
         raise SystemExit(1)
     print("[typed custom question run] ok - the typed question was answered")
 
-    # the persisted index must be visible in the sidebar
+    # the persisted index must be visible in the settings menu
     text = body_text(at)
     if "chroma_db" not in text:
         print("[index panel] FAIL - the index store path is not shown")

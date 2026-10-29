@@ -23,7 +23,7 @@ from trivia.tools import SessionMemory
 st.set_page_config(
     page_title="Multi-Hop Trivia QA with ReAct",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 st.markdown(styles.CSS, unsafe_allow_html=True)
 
@@ -63,122 +63,148 @@ def signature_diff(old: tuple, new: tuple) -> str:
     return "; ".join(changed)
 
 
-def sidebar() -> dict:
-    with st.sidebar:
-        st.markdown("### Multi-Hop Trivia")
-        st.caption("ReAct + Planner + Verifier over a dictionary and a mock Chroma index.")
+def settings_panel() -> dict:
+    """All pipeline controls, rendered inside the header settings popover."""
+    st.markdown(
+        '<div class="mh-settings-intro">'
+        '<div class="mh-settings-kicker">Workspace settings</div>'
+        '<div class="mh-settings-lead">Configure the scenario, retrieval and verifier. '
+        "Nothing runs until you press <b>Run pipeline</b>.</div>"
+        "</div>",
+        unsafe_allow_html=True,
+    )
 
-        st.markdown("#### 1. Scenario")
-        keys = [s.key for s in SCENARIOS] + [CUSTOM_SCENARIO.key]
-        scenario_key = st.selectbox(
-            "Scenario",
-            options=keys,
-            format_func=scenario_label,
-            index=0,
-            key="scenario_key",
-        )
-        custom_text = ""
-        if scenario_key == "custom":
-            custom_text = st.text_input(
-                "Your question",
-                value="What is the capital of the country where the Hollywood Sign is located?",
-                key="custom_question",
-            )
-
-        st.markdown("#### 2. Retrieval")
-        mode_label = st.radio(
-            "Tool",
-            options=["Dictionary Lookup", "Chroma RAG"],
-            horizontal=True,
-            key="mode_label",
-        )
-        mode = "dictionary" if mode_label == "Dictionary Lookup" else "chroma"
-        k = st.slider(
-            "Top-k documents (Chroma RAG)",
-            min_value=1,
-            max_value=8,
-            value=3,
-            disabled=(mode == "dictionary"),
-            key="k",
-            help=(
-                "How many passages the retriever puts in the context window. "
-                "The dictionary always returns exactly one fact, so k does not apply there."
-            ),
-        )
-        if mode == "dictionary":
-            st.caption("Dictionary mode: exact key lookup, k is not applicable.")
-
-        st.markdown("#### 3. Agent controls")
-        max_hops = st.number_input(
-            "Hard hop cap (max tool calls)",
-            min_value=1,
-            max_value=10,
-            value=4,
-            step=1,
-            key="max_hops",
-        )
-        autocorrect = st.toggle(
-            "Verifier auto-correct",
-            value=True,
-            key="autocorrect",
-            help="Re-run the chain with the value the verifier trusts when a hop is rejected.",
-        )
-        hallucinate = st.toggle(
-            "Simulate hallucination (unsafe mode)",
-            value=False,
-            key="hallucinate",
-            help="When a fact is missing, let the model assert a value instead of degrading.",
+    st.markdown(
+        ui.settings_section("01", "Scenario", "Curated question or your own"),
+        unsafe_allow_html=True,
+    )
+    keys = [s.key for s in SCENARIOS] + [CUSTOM_SCENARIO.key]
+    scenario_key = st.selectbox(
+        "Scenario",
+        options=keys,
+        format_func=scenario_label,
+        index=0,
+        key="scenario_key",
+    )
+    custom_text = ""
+    if scenario_key == "custom":
+        custom_text = st.text_input(
+            "Your question",
+            value="What is the capital of the country where the Hollywood Sign is located?",
+            key="custom_question",
         )
 
-        col1, col2 = st.columns(2)
-        run_clicked = col1.button("Run pipeline", type="primary", width="stretch")
-        reset_clicked = col2.button("Reset memory", width="stretch")
+    st.markdown(
+        ui.settings_section("02", "Retrieval", "Dictionary lookup or mock Chroma RAG"),
+        unsafe_allow_html=True,
+    )
+    mode_label = st.radio(
+        "Tool",
+        options=["Dictionary Lookup", "Chroma RAG"],
+        horizontal=True,
+        key="mode_label",
+    )
+    mode = "dictionary" if mode_label == "Dictionary Lookup" else "chroma"
+    k = st.slider(
+        "Top-k documents (Chroma RAG)",
+        min_value=1,
+        max_value=8,
+        value=3,
+        disabled=(mode == "dictionary"),
+        key="k",
+        help=(
+            "How many passages the retriever puts in the context window. "
+            "The dictionary always returns exactly one fact, so k does not apply there."
+        ),
+    )
+    if mode == "dictionary":
+        st.caption("Dictionary mode: exact key lookup, k is not applicable.")
 
-        if reset_clicked:
-            st.session_state["memory"] = SessionMemory()
-            st.session_state.pop("last_report", None)
-            st.session_state["signature"] = None
-            st.rerun()
+    st.markdown(
+        ui.settings_section("03", "Agent controls", "Hop budget and verifier behaviour"),
+        unsafe_allow_html=True,
+    )
+    max_hops = st.number_input(
+        "Hard hop cap (max tool calls)",
+        min_value=1,
+        max_value=10,
+        value=4,
+        step=1,
+        key="max_hops",
+    )
+    autocorrect = st.toggle(
+        "Verifier auto-correct",
+        value=True,
+        key="autocorrect",
+        help="Re-run the chain with the value the verifier trusts when a hop is rejected.",
+    )
+    hallucinate = st.toggle(
+        "Simulate hallucination (unsafe mode)",
+        value=False,
+        key="hallucinate",
+        help="When a fact is missing, let the model assert a value instead of degrading.",
+    )
 
-        st.markdown("#### Session memory")
-        memory = st.session_state.get("memory") or SessionMemory()
-        st.session_state["memory"] = memory
-        st.markdown(ui.memory_table(memory.as_list()), unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    run_clicked = col1.button("Run pipeline", type="primary", width="stretch")
+    reset_clicked = col2.button("Reset memory", width="stretch")
 
-        st.markdown("#### Index statistics")
-        store = chroma_store_path()
-        rebuild_clicked = st.button("Rebuild vector index", width="stretch")
-        if rebuild_clicked:
-            reset_chroma_cache()
-            collection = get_chroma(force_rebuild=True)
-            st.toast("Vector index rebuilt on disk.", icon="\u2713")
-        else:
-            collection = get_chroma()
-        st.markdown(
-            ui.kv_block(
-                [
-                    ("documents in index", str(collection.count())),
-                    ("curated facts", str(len(CURATED_FACTS))),
-                    ("noisy web docs", str(len(NOISY_FACTS))),
-                    ("vocabulary", str(len(collection._embedder.idf))),
-                    ("store", str(store)),
-                    (
-                        "state",
-                        {
-                            "disk": "loaded from disk",
-                            "built": "rebuilt and written to disk",
-                            "memory": "in memory only",
-                        }.get(collection.source, collection.source),
-                    ),
-                ]
-            ),
-            unsafe_allow_html=True,
+    if reset_clicked:
+        st.session_state["memory"] = SessionMemory()
+        st.session_state.pop("last_report", None)
+        st.session_state["signature"] = None
+        st.rerun()
+
+    st.markdown('<div class="mh-settings-divider"></div>', unsafe_allow_html=True)
+    st.markdown(
+        ui.settings_section("04", "Session memory", "Facts stored during this session"),
+        unsafe_allow_html=True,
+    )
+    memory = st.session_state.get("memory") or SessionMemory()
+    st.session_state["memory"] = memory
+    st.markdown(
+        f'<div class="mh-settings-table">{ui.memory_table(memory.as_list())}</div>',
+        unsafe_allow_html=True,
+    )
+
+    st.markdown('<div class="mh-settings-divider"></div>', unsafe_allow_html=True)
+    st.markdown(
+        ui.settings_section("05", "Vector index", "Persisted mock Chroma store"),
+        unsafe_allow_html=True,
+    )
+    store = chroma_store_path()
+    rebuild_clicked = st.button("Rebuild vector index", width="stretch")
+    if rebuild_clicked:
+        reset_chroma_cache()
+        collection = get_chroma(force_rebuild=True)
+        st.toast("Vector index rebuilt on disk.", icon="\u2713")
+    else:
+        collection = get_chroma()
+    st.markdown(
+        ui.kv_block(
+            [
+                ("documents in index", str(collection.count())),
+                ("curated facts", str(len(CURATED_FACTS))),
+                ("noisy web docs", str(len(NOISY_FACTS))),
+                ("vocabulary", str(len(collection._embedder.idf))),
+                ("store", str(store)),
+                (
+                    "state",
+                    {
+                        "disk": "loaded from disk",
+                        "built": "rebuilt and written to disk",
+                        "memory": "in memory only",
+                    }.get(collection.source, collection.source),
+                ),
+            ]
+        ),
+        unsafe_allow_html=True,
+    )
+    if collection.source != "disk":
+        st.caption(
+            f"The index is persisted at `{store}`. It was created on this run and will be "
+            "reused from disk next time."
         )
-        if collection.source != "disk":
-            st.caption(
-                f"The index is persisted at `{store}`. It was created on this run and will be "
-                "reused from disk next time."
-            )
 
     return {
         "scenario_key": scenario_key,
@@ -192,11 +218,23 @@ def sidebar() -> dict:
     }
 
 
+def header() -> dict:
+    """Top navigation: product bar on the left, settings gear on the right."""
+    with st.container(key="mh-navbar"):
+        left, right = st.columns([1, 0.08], vertical_alignment="center")
+        with left:
+            st.markdown(ui.topbar(), unsafe_allow_html=True)
+        with right:
+            with st.popover("\u2699\ufe0f", help="Open settings"):
+                return settings_panel()
+    return {}
+
+
 # --------------------------------------------------------------------------
 
 
 def main() -> None:
-    cfg = sidebar()
+    cfg = header()
 
     if not cfg["question"]:
         st.warning("Type a question to run the pipeline.")

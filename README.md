@@ -15,10 +15,11 @@ streamlit run app.py
 
 Then open <http://localhost:8501>.
 
-The app starts **idle**: pick a scenario and the retrieval settings in the sidebar, then
-press **Run pipeline**. Nothing is executed until you press it. If you change a setting
-after a run, the old result is cleared and the app tells you what changed, so nothing on
-screen ever contradicts the sidebar - but it still does not re-run on its own.
+The app starts **idle**: open the **&#9881; settings menu** in the top-right header, pick a
+scenario and the retrieval settings, then press **Run pipeline**. Nothing is executed until
+you press it. If you change a setting after a run, the old result is cleared and the app
+tells you what changed, so nothing on screen ever contradicts your settings - but it still
+does not re-run on its own.
 
 ---
 
@@ -35,7 +36,7 @@ screen ever contradicts the sidebar - but it still does not re-run on its own.
 
 ### Writing your own question
 
-Pick **custom** in the sidebar and type anything. The planner grounds the entities of your
+Pick **custom** in the settings menu and type anything. The planner grounds the entities of your
 question in the fact graph (including through the alias table, so `Spielberg` resolves to
 `Steven Spielberg` and `America` to `United States`), scores every candidate chain against
 the wording and the expected answer type, and picks the best one:
@@ -72,7 +73,7 @@ plausible-looking answer to a different question.
 ## 2. Architecture
 
 ```
-app.py                  Streamlit UI (sidebar + trace explorer + verifier report)
+app.py                  Streamlit UI (header settings menu + trace explorer + verifier report)
 trivia/
   kb.py                 the corpus: 20 curated facts + 5 noisy web documents,
                         the mock TF-IDF embedder and the MockChromaCollection
@@ -118,7 +119,7 @@ chroma_db/trivia_multihop/
 
 On every later run the store is **reused** instead of being re-embedded - the manifest's
 corpus hash is compared against the corpus, and a changed corpus (or a click on *Rebuild
-vector index*) rebuilds it. The sidebar shows the store path and whether the index was
+vector index*) rebuilds it. The settings menu shows the store path and whether the index was
 loaded from disk or rebuilt. The vectors survive the round-trip bit-for-bit, so a reloaded
 index ranks documents exactly like a fresh one.
 
@@ -181,13 +182,12 @@ the strongest support - and the researcher re-runs the chain with the corrected 
 
 ## 3. The colour palette & design language
 
-The canvas - app **and** sidebar - is pure white. Every surface is separated by a 1px
-silver hairline and a very soft shadow, and the deep purple is used as an *accent*, never
-as a wall of colour:
+The canvas is pure white. Every surface is separated by a 1px silver hairline and a very
+soft shadow, and the deep purple is used as an *accent*, never as a wall of colour:
 
 | Colour | Role |
 |---|---|
-| `#FFFFFF` white | the app canvas, the sidebar, and every card surface |
+| `#FFFFFF` white | the app canvas, the settings popover, and every card surface |
 | `#722F99` deep purple | the title, key text (agent names, the final answer), the active tab underline, primary buttons, the small kicker dot, and the 3px left rules that mark Planner/Verifier output |
 | `#C5C1C1` silver | 1px borders, dividers, inactive tab text, secondary helper text, the Observation blocks |
 | `#FEE7C8` pale peach | the soft agent cards and the Thought bubbles in the trace |
@@ -195,22 +195,23 @@ as a wall of colour:
 
 The design rules the stylesheet follows:
 
-* **Header** - no colour block. A white header with a hairline underneath, the title in
-  purple, the subtitle in silver, and a small purple dot next to the kicker.
+* **Header** - a compact white navigation bar with the brand mark on the left and a gear
+  button on the right, over a soft peach page header. The title is purple, the subtitle is
+  secondary ink, and a small purple dot sits next to the kicker.
 * **Agent cards** - 1px silver border, a 3px coloured top rule (purple for Planner and
   Verifier, silver for Researcher, soft red when something went wrong), a very soft peach
   fill, `padding: 1.5rem` and `box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05)`.
 * **Statuses** - `CONFIRMED`, `ALL_HOPS_RESOLVED`, `REJECTED` and friends are rounded pill
   badges (999px radius, 10px type) rather than raw uppercase text: neutral silver with
   dark text when good, soft red with dark text when bad, a purple tint for accents.
-* **Tabs** - no fills. Inactive tabs are silver with a hover to purple; the active tab is
-  bold purple with a 2px purple bottom border.
+* **Tabs** - no fills. Inactive tabs are secondary ink with a hover to purple; the active
+  tab is bold purple with a 2px purple bottom border.
 * **Trace** - each step is a white card with a hairline; inside it the Thought bubble is
   peach with a purple left rule, the Action bubble is a soft-red tint, and the Observation
   bubble is a silver tint.
-* **Widgets** - the sidebar is white with a 1px right border; the dropdown, number field,
-  slider and buttons are minimal and native, with a purple focus ring and a purple slider
-  thumb.
+* **Widgets** - the settings popover is white with a silver hairline and a soft shadow; the
+  dropdown, number field, slider and buttons are minimal and native, with a purple focus
+  ring and a purple slider thumb.
 
 
 ---

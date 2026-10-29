@@ -41,6 +41,31 @@ def pill(text: str, kind: str = "grey") -> str:
 # --------------------------------------------------------------------------
 
 
+def topbar(brand: str = "Multi-Hop Trivia", tag: str = "ReAct QA Workbench") -> str:
+    """Compact product bar shown above the page header (the gear sits beside it)."""
+    return f"""
+    <div class="mh-navbar">
+      <span class="mh-brand-mark">MH</span>
+      <span class="mh-brand">
+        <span class="mh-brand-name">{esc(brand)}</span>
+        <span class="mh-brand-sub">{esc(tag)}</span>
+      </span>
+      <span class="mh-nav-badge"><span class="mh-nav-dot"></span>Local &middot; Offline</span>
+    </div>
+    """
+
+
+def settings_section(index: str, title: str, caption: str = "") -> str:
+    """Small numbered heading used inside the settings popover."""
+    cap = f'<span class="mh-settings-caption">{esc(caption)}</span>' if caption else ""
+    return (
+        '<div class="mh-settings-head">'
+        f'<span class="mh-settings-num">{esc(index)}</span>'
+        f'<span class="mh-settings-title">{esc(title)}</span>'
+        f"{cap}</div>"
+    )
+
+
 def hero(kicker: str, title: str, subtitle: str) -> str:
     return f"""
     <div class="mh-hero">
@@ -94,15 +119,15 @@ def idle_block(changed: str = "") -> str:
         heading = "Ready to run again"
         body = (
             f"You changed the {changed}. The previous result has been cleared so that "
-            "nothing on screen contradicts the sidebar. Press <b>Run pipeline</b> to run "
-            "the agent on the current settings."
+            "nothing on screen contradicts your settings. Open <b>&#9881; Settings</b> and "
+            "press <b>Run pipeline</b> to run the agent on the current settings."
         )
     else:
         label = "Ready to run"
         heading = "The pipeline has not been run yet"
         body = (
-            "Choose a scenario and the retrieval settings in the sidebar, then press "
-            "<b>Run pipeline</b>. Nothing is executed until you do."
+            "Open <b>&#9881; Settings</b> to choose a scenario and the retrieval settings, "
+            "then press <b>Run pipeline</b>. Nothing is executed until you do."
         )
     return f"""
     <div class="mh-idle">
